@@ -28,6 +28,8 @@ section .data
     correct_len equ $ - correct
     incorrect db "Incorrect!", 10, 0
     incorrect_len equ $ - incorrect
+    finalscore db "Final score: ", 0
+    finalscore_len equ $ - finalscore
 
     q1 db "Q1) What is the capital of France?", 10, "    a) Berlin", 10, "    b) Paris", 10, "    c) Madrid", 10, 0
     q1_len equ $ - q1
@@ -53,11 +55,23 @@ section .data
 
     select_answer db "Select (a/b/c): ", 0
     select_answer_len equ $ - select_answer 
+
+    newln db 10
+    newln_len equ $ - newln
     
     score db 0
 
+    r1 db "Rank: Quiz master - flawless victory!"
+    r1_len equ $ - r1
+    r2 db "Rank: Skilled scholar - strong command!"
+    r2_len equ $ - r2
+    r3 db "Rank: Beginner braniac - progress unlocked!"
+    r3_len equ $ - r3
+    r4 db "Rank: Noob explorer - keep practicing!"
+    r4_len equ $ - r4
+
 section .bss
-    answer_buf resb 2
+    answer_buf resb 1
 
 section .text
     global _start
@@ -69,53 +83,94 @@ program_loop:
     mov ecx, num_questions   
     mov edi, q_list         
     mov esi, q_len_list     
+    call question_loop
+
+    STDOUT newln, newln_len
+    STDOUT finalscore, finalscore_len
+    call display_score  
+    ret
 
 question_loop:
     push ecx
 
-    movzx edx, byte [esi] 
+    mov edx, [esi] 
     mov ecx, [edi]
     STDOUT ecx, edx
-
-    ; Change the system to contain the questions + choices so that the loop is easier
 
     STDOUT select_answer, select_answer_len
     STDIN answer_buf, 2
 
-
     pop ecx
     call check_answer
-
-
-    ; Take question here
 
     sub ecx, 1
     add esi, 4
     add edi, 4
 
     cmp ecx, 0
+
+    pusha
+    STDOUT newln, newln_len
+    popa
+
     jne question_loop
+
     ret
 check_answer:
-    movzx eax, byte [answer_key + 9 - ecx] 
+    mov eax, num_questions
+    sub eax, ecx
+    movzx edx, byte [answer_key + eax] 
     push ecx
 
     movzx ebx, byte [answer_buf]
-    cmp al, bl 
+    cmp bl, dl 
     jne wrong_answer
 
-    STDOUT correct, incorrect_len
+    STDOUT correct, correct_len
+    inc byte [score]
 
     pop ecx
     ret
 
 wrong_answer:
     STDOUT incorrect, incorrect_len
-    inc byte [score]
 
     pop ecx
     ret
-
+display_score:
+    call calculate_rank
+    mov eax, [score]
+    add eax, '0'
+    mov [score], eax
+    STDOUT score, 1
+    STDOUT newln, newln_len
+    STDOUT edi, esi
+    ret
+calculate_rank:
+    cmp [score], byte 9
+    jge quiz_master
+    cmp [score], byte 6
+    jge skilled_scholar
+    cmp [score], byte 3
+    jge beginner_brainiac
+    jmp noob_explorer
+    ret
+quiz_master:
+    mov edi, r1
+    mov esi, r1_len
+    ret
+skilled_scholar:
+    mov edi, r2
+    mov esi, r2_len
+    ret
+beginner_brainiac:
+    mov edi, r3
+    mov esi, r3_len
+    ret
+noob_explorer:
+    mov edi, r4
+    mov esi, r4_len
+    ret
 exit:       
     mov eax, 1 
     xor ebx, ebx
