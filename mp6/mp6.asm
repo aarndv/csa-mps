@@ -23,7 +23,7 @@
     mov ebx, eax
     mov eax, 4
     mov ecx, %2
-    mov edx, %3
+    mov edx, [%3]
     int 0x80
 
     mov eax, 6
@@ -38,6 +38,9 @@
 %macro GETINPUT 3
     STDOUT %1, %2
     STDIN %3, RESERVE_BYTE_SIZE
+
+    dec eax
+    mov byte [%3 + eax], 0
 %endmacro
 
 section .data
@@ -46,6 +49,8 @@ section .data
     newln_len equ $ - newln
     cls db 27, '[2J', 27, '[H'
     clsLen equ $ - cls
+
+    newln2 db 10, 0
 
     filename db "file.txt", 0
 
@@ -95,30 +100,52 @@ section .data
     placePrompt db "What's your go-to place? ", 0
     placePromptLen equ $ - placePrompt
 
-    whatIfText db "Next is your what ifs!", 10, 0
-    whatIfTextLen equ $ - whatIfText
-    powerPrompt db "What if you had a superpower. What would that be? ", 0
-    powerPromptLen equ $ - powerPrompt
-    timeTrvPrompt db "What if you could time travel. When would you go? ", 0
-    timeTrvPromptLen equ $ - timeTrvPrompt
-    meetAnyPrompt db "What if you could meet anyone. Who would that be? ", 0
-    meetAnyPromptLen equ $ - meetAnyPrompt
-
-    topThreeText db "Let's find out about your top 3's", 10, 0
-    topThreeTextLen equ $ - topThreeText
-    t3SongsPrompt db "Top 3 songs on repeat right now? ", 0
-    t3SongsPromptLen equ $ - t3SongsPrompt
-    t3ThingsPrompt db "Top 3 things you can't live without? ", 0
-    t3ThingsPromptLen equ $ - t3ThingsPrompt
-    t3CountriesPrompt db "Top 3 dream countries? ", 0
-    t3CountriesPromptLen equ $ - t3CountriesPrompt
-
     ambitionsText db "Lastly, let's find out about your ambitions!", 10, 0
     ambitionsTextLen equ $ - ambitionsText
     dreamPrompt db "What is your dream? ", 0
     dreamPromptLen equ $ - dreamPrompt
     mottoPrompt db "What is your motto in life? ", 0
     mottoPromptLen equ $ - mottoPrompt
+    
+    details db " [ -- DETAILS -- ] ", 0
+    firsts db " [ -- FIRSTS! -- ] ", 0
+    faves db " [ -- FAVORITES! -- ] ", 0
+    hobbies db " [ -- HOBBIES -- ] ", 0
+    ambitions db " [ -- AMBITIONS -- ] ", 0
+
+    nameAns db " (*)  Name: ", 0
+    emailAns db " (*)  Email: ", 0
+    ageAns db " (*)  Age: ", 0
+    riskAns db " (*)  First risk you ever took? ", 0
+    happyAns db " (*)  Last time you felt happy? ", 0
+    colorAns db " (*)  Color: ", 0
+    colorAnsLen equ $ - colorAns
+    genreAns db " (*)  Music Genre: ", 0
+    genreAnsLen equ $ - genreAns
+    bandAns db " (*)  Band: ", 0
+    bandAnsLen equ $ - bandAns
+    songAns db " (*)  Song: ", 0
+    songAnsLen equ $ - songAns
+    foodAns db " (*)  Food: ", 0
+    foodAnsLen equ $ - foodAns
+    drinkAns db " (*)  Drink: ", 0
+    drinkAnsLen equ $ - drinkAns
+    actAns db " (*)  Activity: ", 0
+    actAnsLen equ $ - actAns
+    gameAns db " (*)  Game: ", 0
+    gameAnsLen equ $ - gameAns
+    bookAns db " (*)  Book: ", 0
+    bookAnsLen equ $ - bookAns
+    showAns db " (*)  Show: ", 0
+    showAnsLen equ $ - showAns
+    movieAns db " (*)  Movie: ", 0
+    movieAnsLen equ $ - movieAns
+    placeAns db " (*)  Place: ", 0
+    placeAnsLen equ $ - placeAns
+    dreamAns db " (*)  Dream: ", 0
+    dreamAnsLen equ $ - dreamAns
+    mottoAns db " (*)  Motto: ", 0
+    mottoAnsLen equ $ - mottoAns
 
 section .bss
     contentBuffer resb 2048
@@ -141,12 +168,6 @@ section .bss
     show resb RESERVE_BYTE_SIZE
     movie resb RESERVE_BYTE_SIZE
     place resb RESERVE_BYTE_SIZE
-    power resb RESERVE_BYTE_SIZE
-    timeTrv resb RESERVE_BYTE_SIZE
-    meetAny resb RESERVE_BYTE_SIZE
-    t3Songs resb RESERVE_BYTE_SIZE
-    t3Things resb RESERVE_BYTE_SIZE
-    t3Countries resb RESERVE_BYTE_SIZE
     dream resb RESERVE_BYTE_SIZE
     motto resb RESERVE_BYTE_SIZE
 
@@ -155,12 +176,13 @@ section .text
 
 _start:
     call promptInput
-
     mov dword [contentLength], 0
-
     call constructContent
     ; setup the input into one var 
     ; insert the input into a file
+
+    FILEIN filename, contentBuffer, contentLength
+
     call exit
 
 promptInput:
@@ -194,51 +216,172 @@ promptInput:
     GETINPUT placePrompt, placePromptLen, place
 
     call clearScreen
-    PRINTLN whatIfText, whatIfTextLen
-    GETINPUT powerPrompt, powerPromptLen, power
-    GETINPUT timeTrvPrompt, timeTrvPromptLen, timeTrv
-    GETINPUT meetAnyPrompt, meetAnyPromptLen, meetAny
-
-    call clearScreen
-    PRINTLN topThreeText, topThreeTextLen
-    GETINPUT t3SongsPrompt, t3SongsPromptLen, t3Songs
-    GETINPUT t3ThingsPrompt, t3ThingsPromptLen, t3Things
-    GETINPUT t3CountriesPrompt, t3CountriesPromptLen, t3Countries
-
-    call clearScreen
     PRINTLN ambitionsText, ambitionsTextLen
     GETINPUT dreamPrompt, dreamPromptLen, dream
     GETINPUT mottoPrompt, mottoPromptLen, motto
 
     ret
+constructContent:
+    mov eax, details
+    call appendString
+
+    mov eax, nameAns
+    mov ebx, name
+    call appendStringPair
+
+    mov eax, emailAns
+    mov ebx, email
+    call appendStringPair
+
+    mov eax, ageAns
+    mov ebx, age
+    call appendStringPair
+
+    mov eax, newln2
+    call appendString
+
+    mov eax, firsts
+    call appendString
+
+    mov eax, riskAns
+    mov ebx, risk
+    call appendStringPair
+
+    mov eax, happyAns
+    mov ebx, happy
+    call appendStringPair
+
+    mov eax, newln2
+    call appendString
+
+    mov eax, faves
+    call appendString
+
+    mov eax, colorAns
+    mov ebx, color
+    call appendStringPair
+
+    mov eax, genreAns
+    mov ebx, genre
+    call appendStringPair
+
+    mov eax, bandAns
+    mov ebx, band
+    call appendStringPair
+
+    mov eax, songAns
+    mov ebx, song
+    call appendStringPair
+
+    mov eax, foodAns
+    mov ebx, food
+    call appendStringPair
+
+    mov eax, drinkAns
+    mov ebx, drink
+    call appendStringPair
+
+    mov eax, newln2
+    call appendString
+
+    mov eax, hobbies
+    call appendString
+
+    mov eax, actAns
+    mov ebx, act
+    call appendStringPair
+
+    mov eax, gameAns
+    mov ebx, game
+    call appendStringPair
+
+    mov eax, bookAns
+    mov ebx, book
+    call appendStringPair
+
+    mov eax, showAns
+    mov ebx, show
+    call appendStringPair
+
+    mov eax, movieAns
+    mov ebx, movie
+    call appendStringPair
+
+    mov eax, placeAns
+    mov ebx, place
+    call appendStringPair
+
+    mov eax, newln2
+    call appendString
+
+    mov eax, ambitions
+    call appendString
+
+    mov eax, dreamAns
+    mov ebx, dream
+    call appendStringPair
+
+    mov eax, mottoAns
+    mov ebx, motto
+    call appendStringPair
+
+    ret
 appendString:
-    pusha 
     mov edi, contentBuffer
     mov ecx, [contentLength]
     add edi, ecx
     mov esi, eax                ;eax holds the pointer for the input string
-
-copyLoop:
+.copyLoop:
     mov al, [esi]
     cmp al, 0
-    je doneCopying
+    je .doneCopying
 
     mov [edi], al
     inc edi
     inc esi
-    inc dword [contentLength]
-    jmp copyLoop
-
-doneCopying:
+    inc ecx
+    jmp .copyLoop
+.doneCopying:
     mov al, [newln] 
     mov [edi], al
-    inc dword [contentLength] 
+    inc ecx
 
-    popa
+    mov [contentLength], ecx
     ret
-constructContent:
-    mov eax,
+    
+appendStringPair:
+    mov edi, contentBuffer
+    mov ecx, [contentLength]
+    add edi, ecx
+    mov esi, eax
+.copyFirst:
+    mov al, [esi]
+    cmp al, 0
+    je .copySecond
 
+    mov [edi], al
+    inc edi
+    inc esi
+    inc ecx
+    jmp .copyFirst
+.copySecond:
+    mov esi, ebx
+.copySecondLoop:
+    mov al, [esi]
+    cmp al, 0
+    je .doneBoth
+
+    mov [edi], al
+    inc edi
+    inc esi
+    inc ecx
+    jmp .copySecondLoop
+.doneBoth:
+    mov al, [newln]
+    mov [edi], al
+    inc ecx
+
+    mov [contentLength], ecx
     ret
 
 clearScreen:
