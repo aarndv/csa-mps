@@ -14,11 +14,6 @@
     int 0x80
 %endmacro
 
-%macro GET_ANSWER 4
-    STDOUT %1, %2 
-    STDIN %3, %4
-%endmacro 
-
 section .data
     num_questions equ 9
 

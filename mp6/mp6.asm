@@ -121,6 +121,9 @@ section .data
     mottoPromptLen equ $ - mottoPrompt
 
 section .bss
+    contentBuffer resb 2048
+    contentLength resd 1
+    
     name resb RESERVE_BYTE_SIZE
     email resb RESERVE_BYTE_SIZE
     age resb RESERVE_BYTE_SIZE
@@ -152,6 +155,10 @@ section .text
 
 _start:
     call promptInput
+
+    mov dword [contentLength], 0
+
+    call constructContent
     ; setup the input into one var 
     ; insert the input into a file
     call exit
@@ -202,6 +209,37 @@ promptInput:
     PRINTLN ambitionsText, ambitionsTextLen
     GETINPUT dreamPrompt, dreamPromptLen, dream
     GETINPUT mottoPrompt, mottoPromptLen, motto
+
+    ret
+appendString:
+    pusha 
+    mov edi, contentBuffer
+    mov ecx, [contentLength]
+    add edi, ecx
+    mov esi, eax                ;eax holds the pointer for the input string
+
+copyLoop:
+    mov al, [esi]
+    cmp al, 0
+    je doneCopying
+
+    mov [edi], al
+    inc edi
+    inc esi
+    inc dword [contentLength]
+    jmp copyLoop
+
+doneCopying:
+    mov al, [newln] 
+    mov [edi], al
+    inc dword [contentLength] 
+
+    popa
+    ret
+constructContent:
+    mov eax,
+
+    ret
 
 clearScreen:
     STDOUT cls, clsLen
