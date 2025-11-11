@@ -123,6 +123,15 @@ section .data
     ariesArt3 db "    \|/    ", 0
     ariesArt4 db "     |     ", 0
 
+    taurusArt1 db ""
+
+.-.       .-.
+  \.     ./      Taurus-  The Bull
+    \___/
+   .'   `.
+  :       :
+  :       :
+   `.___.'
     
 
     zodiacs dd aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces
