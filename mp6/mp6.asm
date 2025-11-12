@@ -52,7 +52,7 @@ section .data
 
     newln2 db 10, 0
 
-    filename db "file.txt", 0
+    filename db "mp6.txt", 0
 
     detailsText db "Let's get your details!", 10, 0
     detailsTextLen equ $ - detailsText
@@ -178,11 +178,7 @@ _start:
     call promptInput
     mov dword [contentLength], 0
     call constructContent
-    ; setup the input into one var 
-    ; insert the input into a file
-
     FILEIN filename, contentBuffer, contentLength
-
     call exit
 
 promptInput:

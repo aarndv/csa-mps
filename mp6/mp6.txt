@@ -1,0 +1,32 @@
+ [ -- DETAILS -- ] 
+ (*)  Name: Aaron Dale C. Verceles
+ (*)  Email: aarondaleverceles@gmail.com
+ (*)  Age: 19
+
+
+ [ -- FIRSTS! -- ] 
+ (*)  First risk you ever took? Join a competition
+ (*)  Last time you felt happy? today
+
+
+ [ -- FAVORITES! -- ] 
+ (*)  Color: Green
+ (*)  Music Genre: Rock
+ (*)  Band: Queen
+ (*)  Song: Bohemian Rhapsody
+ (*)  Food: Porksteak, Giniling, Menudo, Chicken
+ (*)  Drink: Iced Coffee
+
+
+ [ -- HOBBIES -- ] 
+ (*)  Activity: Playing games, reading, eating, drawing, and coding
+ (*)  Game: Satisfactory
+ (*)  Book: Song of Achilles 
+ (*)  Show: Steins;Gate
+ (*)  Movie: Back to the Future 1 to 3
+ (*)  Place: Cafe or Parks
+
+
+ [ -- AMBITIONS -- ] 
+ (*)  Dream: To minimize my regrets
+ (*)  Motto: Always choose the best option
