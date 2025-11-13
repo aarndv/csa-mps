@@ -14,27 +14,19 @@
     int 0x80
 %endmacro
 
-; MODIFIED: Renamed from FILEIN to FILEWRITE for clarity
 %macro FILEWRITE 3
-    ; sys_creat (creates and opens a file)
     mov eax, 8
-    mov ebx, %1     ; const char *filename
-    mov ecx, 0777   ; file permissions (octal)
+    mov ebx, %1     
+    mov ecx, 0777   
     int 0x80
 
-    ; eax now holds the file descriptor (or -1 on error)
-    ; We'll assume it's successful and not check for errors
-
-    ; sys_write
-    mov ebx, eax    ; file descriptor
+    mov ebx, eax    
     mov eax, 4
-    mov ecx, %2     ; *buffer
-    mov edx, [%3]   ; buffer_length (from address)
+    mov ecx, %2     
+    mov edx, [%3]   
     int 0x80
 
-    ; sys_close
     mov eax, 6
-    ; ebx still holds the file descriptor
     int 0x80
 %endmacro
 
@@ -46,12 +38,10 @@
 %macro GETINPUT 3
     STDOUT %1, %2
     STDIN %3, RESERVE_BYTE_SIZE
-
     dec eax
     mov byte [%3 + eax], 0
 %endmacro
 
-; NEW: Helper macro to append a string literal to the contentBuffer
 %macro APPEND_STR_LITERAL 1
     mov eax, %1
     call appendString
@@ -61,6 +51,10 @@ section .data
     RESERVE_BYTE_SIZE equ 256
     cls db 27, '[2J', 27, '[H'
     clsLen equ $ - cls
+    filename db "zodiac.txt", 0
+
+    newln db 10, 0
+    newlnLen equ $ - newln
 
     menuTitle db "[ <-=-=- Main Menu -=-=-> ]", 10, 0
     menuTitleLen equ $ - menuTitle
@@ -73,30 +67,20 @@ section .data
 
     promptChoice db "Enter your choice: ", 0
     promptChoiceLen equ $ - promptChoice
-
     tryAgainMsg db "Do you want to run the program again? (y/n): ", 0
     tryAgainMsgLen equ $ - tryAgainMsg
-
     invalidMsg db "Invalid choice. Please try again.", 10, 0
     invalidMsgLen equ $ - invalidMsg
-
     bdayPrompt db "Enter birthday (MM-DD-YYYY): ", 0
     bdayPromptLen equ $ - bdayPrompt
-
     msgDone db "Parsing complete!", 10, 0
     msgDoneLen equ $ - msgDone
-
     outputTxt db "Your zodiac sign is: ", 0
     outputTxtLen equ $ - outputTxt
-
     savedTxt db "Output successfully saved in zodiac.txt. Check it out for more information about your zodiac sign!", 10, 0
     savedTxtLen equ $ - savedTxt
-
     bdayTxt db "Birthday: ", 0
     bdayTxtLen equ $ - bdayTxt
-
-    ; NEW: Filename for saving
-    filename db "zodiac.txt", 0
 
     aries db "Aries", 0
     ariesLen equ $ - aries
@@ -122,6 +106,9 @@ section .data
     aquariusLen equ $ - aquarius
     pisces db "Pisces", 0
     piscesLen equ $ - pisces
+    
+    zodiacs dd aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces
+    zodiacsLen db ariesLen, taurusLen, geminiLen, cancerLen, leoLen, virgoLen, libraLen, scorpioLen, sagittariusLen, capricornLen, aquariusLen, piscesLen
     
     ariesInfo1      db "Aries is the student who raises their hand first, even if", 0
     ariesInfo1Len equ $ - ariesInfo1
@@ -256,6 +243,10 @@ section .data
     ariesArt3Len equ $ - ariesArt3
     ariesArt4 db "     |     ", 0
     ariesArt4Len equ $ - ariesArt4
+
+    ariesArts dd ariesArt1, ariesArt2, ariesArt3, ariesArt4 
+    ariesArtsLen dd ariesArt1Len, ariesArt2Len, ariesArt3Len, ariesArt4Len
+    ariesArtCount db 4 
 
     ; taurus
     taurusArt1 db ".-.     .-.", 0
@@ -393,13 +384,6 @@ section .data
     piscesArt5 db ".-'   `-.", 0
     piscesArt5Len equ $ - piscesArt5
 
-    zodiacs dd aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces
-    zodiacsLen db ariesLen, taurusLen, geminiLen, cancerLen, leoLen, virgoLen, libraLen, scorpioLen, sagittariusLen, capricornLen, aquariusLen, piscesLen
-
-    newln db 10, 0
-    newlnLen equ $ - newln
-    
-
 section .bss
     contentBuffer resb 4096
     contentLength resd 1
@@ -440,22 +424,17 @@ handleZodiac:
     GETINPUT bdayPrompt, bdayPromptLen, bdayBuffer
     call parseBirthday
     call determineZodiac
-    call outputZodiac      ; Prints to console
-    call saveToFile       ; Builds buffer and saves to file
+    call outputZodiac      
+    call saveToFile       
     STDOUT savedTxt, savedTxtLen
     STDOUT newln, newlnLen
     jmp askTryAgain
 
-; MODIFIED: This function now builds the entire file buffer
-; and calls the FILEWRITE macro.
 saveToFile:
-    ; Reset content length to 0 to start building a new file
     mov dword [contentLength], 0
 
-    ; 1. Append "Your zodiac sign is: "
     APPEND_STR_LITERAL outputTxt
 
-    ; 2. Append the correct zodiac name
     movzx eax, byte [zodiacInt]
     dec eax
     shl eax, 2
@@ -465,7 +444,6 @@ saveToFile:
     APPEND_STR_LITERAL newln
     APPEND_STR_LITERAL newln
 
-    ; 3. Append "Birthday: " and the birthday string
     mov eax, bdayTxt
     mov ebx, bdayBuffer
     call appendStringPair
@@ -473,7 +451,6 @@ saveToFile:
     APPEND_STR_LITERAL newln
     APPEND_STR_LITERAL newln
 
-    ; 4. Jump to append the correct Art
     cmp byte [zodiacInt], 1
     je .appendAriesArt
     cmp byte [zodiacInt], 2
@@ -754,15 +731,35 @@ outputZodiac:
     jmp .doneArt          ; Jump to the end
 
 .printAriesArt:
-    STDOUT ariesArt1, ariesArt1Len
-    STDOUT newln, newlnLen
-    STDOUT ariesArt2, ariesArt2Len
-    STDOUT newln, newlnLen
-    STDOUT ariesArt3, ariesArt3Len
-    STDOUT newln, newlnLen
-    STDOUT ariesArt4, ariesArt4Len
-    STDOUT newln, newlnLen
+    mov ecx, ariesArtCount
+    mov edi, ariesArts
+    mov esi, ariesArtsLen
+    jmp .printArtLoop
+.printArtLoop:  
+    push ecx
+
+    mov edx, [esi]
+    mov ecx, [edi]
+    STDOUT ecx, edx
+    pop ecx
+
+    sub ecx, 1
+    add esi, 4
+    add edi, 4
+    cmp ecx, 0
+    
+    jne .printArtLoop
     jmp .doneArt
+
+    ;STDOUT ariesArt1, ariesArt1Len
+    ;STDOUT newln, newlnLen
+    ;STDOUT ariesArt2, ariesArt2Len
+    ;STDOUT newln, newlnLen
+    ;STDOUT ariesArt3, ariesArt3Len
+    ;STDOUT newln, newlnLen
+    ;STDOUT ariesArt4, ariesArt4Len
+    ;STDOUT newln, newlnLen
+    ;jmp .doneArt
 .printTaurusArt:
     STDOUT taurusArt1, taurusArt1Len
     STDOUT newln, newlnLen
