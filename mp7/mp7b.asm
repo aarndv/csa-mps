@@ -14,19 +14,27 @@
     int 0x80
 %endmacro
 
-%macro FILEIN 3
+; MODIFIED: Renamed from FILEIN to FILEWRITE for clarity
+%macro FILEWRITE 3
+    ; sys_creat (creates and opens a file)
     mov eax, 8
-    mov ebx, %1
-    mov ecx, 0777
+    mov ebx, %1     ; const char *filename
+    mov ecx, 0777   ; file permissions (octal)
     int 0x80
 
-    mov ebx, eax
+    ; eax now holds the file descriptor (or -1 on error)
+    ; We'll assume it's successful and not check for errors
+
+    ; sys_write
+    mov ebx, eax    ; file descriptor
     mov eax, 4
-    mov ecx, %2
-    mov edx, [%3]
+    mov ecx, %2     ; *buffer
+    mov edx, [%3]   ; buffer_length (from address)
     int 0x80
 
+    ; sys_close
     mov eax, 6
+    ; ebx still holds the file descriptor
     int 0x80
 %endmacro
 
@@ -43,9 +51,13 @@
     mov byte [%3 + eax], 0
 %endmacro
 
-section .data
-    filename db "zodiac.txt"
+; NEW: Helper macro to append a string literal to the contentBuffer
+%macro APPEND_STR_LITERAL 1
+    mov eax, %1
+    call appendString
+%endmacro
 
+section .data
     RESERVE_BYTE_SIZE equ 256
     cls db 27, '[2J', 27, '[H'
     clsLen equ $ - cls
@@ -83,6 +95,9 @@ section .data
     bdayTxt db "Birthday: ", 0
     bdayTxtLen equ $ - bdayTxt
 
+    ; NEW: Filename for saving
+    filename db "zodiac.txt", 0
+
     aries db "Aries", 0
     ariesLen equ $ - aries
     taurus db "Taurus", 0
@@ -108,14 +123,13 @@ section .data
     pisces db "Pisces", 0
     piscesLen equ $ - pisces
     
-    ; TODO: Separate the sentences into individual ones. At least 3
-    ariesInfo1       db "Aries is the student who raises their hand first, even if", 0
+    ariesInfo1      db "Aries is the student who raises their hand first, even if", 0
     ariesInfo1Len equ $ - ariesInfo1
-    ariesInfo2       db "they're not 100% sure of the answer. They're the competitive", 0
+    ariesInfo2      db "they're not 100% sure of the answer. They're the competitive", 0
     ariesInfo2Len equ $ - ariesInfo2
-    ariesInfo3       db "one who turns every group project into a race and will", 0
+    ariesInfo3      db "one who turns every group project into a race and will", 0
     ariesInfo3Len equ $ - ariesInfo3
-    ariesInfo4       db "probably organize the study group (and the party afterwards)."
+    ariesInfo4      db "probably organize the study group (and the party afterwards)."
     ariesInfo4Len equ $ - ariesInfo4
 
     taurusInfo1      db "Taurus is the super-reliable study buddy who always has the", 0
@@ -149,44 +163,44 @@ section .data
     cancerInfo5      db "appreciate a quiet, cozy study space.", 0
     cancerInfo5Len equ $ - cancerInfo5
 
-    leoInfo1         db "Leo is the student who volunteers to present the group project and", 0
+    leoInfo1        db "Leo is the student who volunteers to present the group project and", 0
     leoInfo1Len equ $ - leoInfo1
-    leoInfo2         db "probably ends up directing it, too. They have a flair for the", 0
+    leoInfo2        db "probably ends up directing it, too. They have a flair for the", 0
     leoInfo2Len equ $ - leoInfo2
-    leoInfo3         db "dramatic and aren't afraid of the spotlight, making them a natural", 0
+    leoInfo3        db "dramatic and aren't afraid of the spotlight, making them a natural", 0
     leoInfo3Len equ $ - leoInfo3
-    leoInfo4         db "class leader. They're also surprisingly generous and will happily", 0
+    leoInfo4        db "class leader. They're also surprisingly generous and will happily", 0
     leoInfo4Len equ $ - leoInfo4
-    leoInfo5         db "share their (brilliant) notes.", 0
+    leoInfo5        db "share their (brilliant) notes.", 0
     leoInfo5Len equ $ - leoInfo5
 
-    virgoInfo1       db "Virgo is the student with the perfectly color-coded notes and a", 0
+    virgoInfo1      db "Virgo is the student with the perfectly color-coded notes and a", 0
     virgoInfo1Len equ $ - virgoInfo1
-    virgoInfo2       db "planner that's organized down to the minute. They're the one who", 0
+    virgoInfo2      db "planner that's organized down to the minute. They're the one who", 0
     virgoInfo2Len equ $ - virgoInfo2
-    virgoInfo3       db "asks the professor a question that clarifies the entire lesson", 0
+    virgoInfo3      db "asks the professor a question that clarifies the entire lesson", 0
     virgoInfo3Len equ $ - virgoInfo3
-    virgoInfo4       db "for everyone. You absolutely want them to proofread your paper", 0
+    virgoInfo4      db "for everyone. You absolutely want them to proofread your paper", 0
     virgoInfo4Len equ $ - virgoInfo4
-    virgoInfo5       db "before you submit it.", 0
+    virgoInfo5      db "before you sumbit it.", 0
     virgoInfo5Len equ $ - virgoInfo5
 
-    libraInfo1       db "Libra is the diplomat of every group project, making sure everyone", 0
+    libraInfo1      db "Libra is the diplomat of every group project, making sure everyone", 0
     libraInfo1Len equ $ - libraInfo1
-    libraInfo2       db "is getting along and the workload is fair. They have a natural", 0
+    libraInfo2      db "is getting along and the workload is fair. They have a natural", 0
     libraInfo2Len equ $ - libraInfo2
-    libraInfo3       db "charm that professors love, but they might spend more time debating", 0
+    libraInfo3      db "charm that professors love, but they might spend more time debating", 0
     libraInfo3Len equ $ - libraInfo3
-    libraInfo4       db "which font to use than actually writing the paper.", 0
+    libraInfo4      db "which font to use than actually writing the paper.", 0
     libraInfo4Len equ $ - libraInfo4
 
-    scorpioInfo1     db "Scorpio is the focused, intense student who sits in the back and", 0
+    scorpioInfo1    db "Scorpio is the focused, intense student who sits in the back and", 0
     scorpioInfo1Len equ $ - scorpioInfo1
-    scorpioInfo2     db "misses nothing. They are a research master who will dig up obscure", 0
+    scorpioInfo2    db "misses nothing. They are a research master who will dig up obscure", 0
     scorpioInfo2Len equ $ - scorpioInfo2
-    scorpioInfo3     db "facts for a term paper that impress the professor. Don't even", 0
+    scorpioInfo3    db "facts for a term paper that impress the professor. Don't even", 0
     scorpioInfo3Len equ $ - scorpioInfo3
-    scorpioInfo4     db "bother asking for their grades; they're a well-kept secret.", 0
+    scorpioInfo4    db "bother asking for their grades; they're a well-kept secret.", 0
     scorpioInfo4Len equ $ - scorpioInfo4
 
     sagittariusInfo1 db "Sagittarius is the student who asks the big, philosophical question", 0
@@ -200,15 +214,15 @@ section .data
     sagittariusInfo5 db "for a study abroad program just for the adventure.", 0
     sagittariusInfo5Len equ $ - sagittariusInfo5
 
-    capricornInfo1   db "Capricorn is the student who already has a five-year career plan", 0
+    capricornInfo1  db "Capricorn is the student who already has a five-year career plan", 0
     capricornInfo1Len equ $ - capricornInfo1
-    capricornInfo2   db "and an internship lined up in their first year. They're incredibly", 0
+    capricornInfo2  db "and an internship lined up in their first year. They're incredibly", 0
     capricornInfo2Len equ $ - capricornInfo2
-    capricornInfo3   db "disciplined, always the last to leave the library, and will create", 0
+    capricornInfo3  db "disciplined, always the last to leave the library, and will create", 0
     capricornInfo3Len equ $ - capricornInfo3
-    capricornInfo4   db "a detailed spreadsheet for the group project. They aren't", 0
+    capricornInfo4  db "a detailed spreadsheet for the group project. They aren't", 0
     capricornInfo4Len equ $ - capricornInfo4
-    capricornInfo5   db "just here to pass; they're here to be top of the class.", 0
+    capricornInfo5  db "just here to pass; they're here to be top of the class.", 0
     capricornInfo5Len equ $ - capricornInfo5
 
     aquariusInfo1    db "Aquarius is the student who comes up with a brilliantly original", 0
@@ -244,29 +258,29 @@ section .data
     ariesArt4Len equ $ - ariesArt4
 
     ; taurus
-    taurusArt1 db ".-.       .-.", 0
+    taurusArt1 db ".-.     .-.", 0
     taurusArt1Len equ $ - taurusArt1
-    taurusArt2 db "  \.     ./  ", 0
+    taurusArt2 db " \.     ./  ", 0
     taurusArt2Len equ $ - taurusArt2
-    taurusArt3 db "    \___/    ", 0
+    taurusArt3 db "   \___/    ", 0
     taurusArt3Len equ $ - taurusArt3
-    taurusArt4 db "   .'   '.   ", 0
+    taurusArt4 db " .'   '.   ", 0
     taurusArt4Len equ $ - taurusArt4
-    taurusArt5 db "  :       :  ", 0
+    taurusArt5 db ":       :  ", 0
     taurusArt5Len equ $ - taurusArt5
-    taurusArt6 db "  :       :  ", 0
+    taurusArt6 db ":       :  ", 0
     taurusArt6Len equ $ - taurusArt6
-    taurusArt7 db "   '.___.'   ", 0
+    taurusArt7 db " '.___.'   ", 0
     taurusArt7Len equ $ - taurusArt7
 
     ; gemini
     geminiArt1 db "'--.__.--'", 0
     geminiArt1Len equ $ - geminiArt1
-    geminiArt2 db "    ||    ", 0
+    geminiArt2 db "    ||     ", 0
     geminiArt2Len equ $ - geminiArt2
-    geminiArt3 db "    ||    ", 0 
+    geminiArt3 db "    ||     ", 0
     geminiArt3Len equ $ - geminiArt3
-    geminiArt4 db "    ||    ", 0
+    geminiArt4 db "    ||     ", 0
     geminiArt4Len equ $ - geminiArt4
     geminiArt5 db ".--'  '--.", 0
     geminiArt5Len equ $ - geminiArt5
@@ -278,13 +292,13 @@ section .data
     cancerArt2Len equ $ - cancerArt2
     cancerArt3 db " (*}  {*) ", 0
     cancerArt3Len equ $ - cancerArt3
-    cancerArt4 db "'.    //  ", 0
+    cancerArt4 db "'.   //   ", 0
     cancerArt4Len equ $ - cancerArt4
     cancerArt5 db "  `---''  ", 0
     cancerArt5Len equ $ - cancerArt5
 
     ; leo
-    leoArt1 db "  .-'-. ", 0
+    leoArt1 db "   .-'-. ", 0
     leoArt1Len equ $ - leoArt1
     leoArt2 db " (.   ')", 0
     leoArt2Len equ $ - leoArt2
@@ -298,13 +312,13 @@ section .data
     ; virgo
     virgoArt1 db "' `:--.__.  ", 0
     virgoArt1Len equ $ - virgoArt1
-    virgoArt2 db "   |  |  ;_.", 0 
+    virgoArt2 db "   |  |  ;_.", 0
     virgoArt2Len equ $ - virgoArt2
-    virgoArt3 db "   (  (. ( )", 0 
+    virgoArt3 db "   (  (. ( )", 0
     virgoArt3Len equ $ - virgoArt3
-    virgoArt4 db "   |  |  |/", 0 
+    virgoArt4 db "   |  |  |/", 0
     virgoArt4Len equ $ - virgoArt4
-    virgoArt5 db "   '  '  '  (J", 0 
+    virgoArt5 db "   '  '  '  (J", 0
     virgoArt5Len equ $ - virgoArt5
 
     ; libra
@@ -320,55 +334,55 @@ section .data
     libraArt5Len equ $ - libraArt5
     
     ; scorpio
-    scorpioArt1 db "`:--.--.        ", 0 
-    scorpioArt1Len equ $ - scorpioArt1 
-    scorpioArt2 db " |  |  |        ", 0 
-    scorpioArt2Len equ $ - scorpioArt2 
-    scorpioArt3 db " |  |  |        ", 0 
-    scorpioArt3Len equ $ - scorpioArt3 
-    scorpioArt4 db " |  :  |\   ./\,", 0 
-    scorpioArt4Len equ $ - scorpioArt4 
-    scorpioArt5 db "         `==)|| ", 0 
-    scorpioArt5Len equ $ - scorpioArt5 
+    scorpioArt1 db "`:--.--.      ", 0
+    scorpioArt1Len equ $ - scorpioArt1
+    scorpioArt2 db " |  |  |      ", 0
+    scorpioArt2Len equ $ - scorpioArt2
+    scorpioArt3 db " |  |  |      ", 0
+    scorpioArt3Len equ $ - scorpioArt3
+    scorpioArt4 db " |  :  |\  ./\,", 0
+    scorpioArt4Len equ $ - scorpioArt4
+    scorpioArt5 db "         `==)|| ", 0
+    scorpioArt5Len equ $ - scorpioArt5
     
     ; sagittarius
-    sagittariusArt1 db "      --.", 0 
+    sagittariusArt1 db "      --.", 0
     sagittariusArt1Len equ $ - sagittariusArt1
     sagittariusArt2 db "      .'|", 0
     sagittariusArt2Len equ $ - sagittariusArt2
     sagittariusArt3 db "    .'   ", 0
     sagittariusArt3Len equ $ - sagittariusArt3
-    sagittariusArt4 db "`..'     ", 0 
+    sagittariusArt4 db "`..'     ", 0
     sagittariusArt4Len equ $ - sagittariusArt4
     sagittariusArt5 db ".'`.     ", 0
     sagittariusArt5Len equ $ - sagittariusArt5
 
     ; capricorn
     capricornArt1 db "        _  ", 0
-    capricornArt1Len equ $ - capricornArt1 
+    capricornArt1Len equ $ - capricornArt1
     capricornArt2 db "\      /_) ", 0
-    capricornArt2Len equ $ - capricornArt2 
+    capricornArt2Len equ $ - capricornArt2
     capricornArt3 db "|\    /\_  ", 0
-    capricornArt3Len equ $ - capricornArt3 
+    capricornArt3Len equ $ - capricornArt3
     capricornArt4 db " \\  /   \;", 0
-    capricornArt4Len equ $ - capricornArt4 
+    capricornArt4Len equ $ - capricornArt4
     capricornArt5 db "  \\/ -_.' ", 0
-    capricornArt5Len equ $ - capricornArt5 
+    capricornArt5Len equ $ - capricornArt5
 
     ; aquarius
     aquariusArt1 db "   _   _   _   ", 0
     aquariusArt1Len equ $ - aquariusArt1
-    aquariusArt2 db "_./ \./ \./ \._", 0 
+    aquariusArt2 db "_./ \./ \./ \._", 0
     aquariusArt2Len equ $ - aquariusArt2
     aquariusArt3 db "'  .   .   .  '", 0
     aquariusArt3Len equ $ - aquariusArt3
     aquariusArt4 db "_./ \./ \./ \._", 0
     aquariusArt4Len equ $ - aquariusArt4
-    aquariusArt5 db "'             '", 0
+    aquariusArt5 db "'              '", 0
     aquariusArt5Len equ $ - aquariusArt5
 
     ; pisces
-    piscesArt1 db "`-.    .-'", 0
+    piscesArt1 db "`-.   .-'", 0
     piscesArt1Len equ $ - piscesArt1
     piscesArt2 db "   :  :   ", 0
     piscesArt2Len equ $ - piscesArt2
@@ -376,13 +390,13 @@ section .data
     piscesArt3Len equ $ - piscesArt3
     piscesArt4 db "   :  :   ", 0
     piscesArt4Len equ $ - piscesArt4
-    piscesArt5 db ".-'    `-.", 0
+    piscesArt5 db ".-'   `-.", 0
     piscesArt5Len equ $ - piscesArt5
 
     zodiacs dd aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces
     zodiacsLen db ariesLen, taurusLen, geminiLen, cancerLen, leoLen, virgoLen, libraLen, scorpioLen, sagittariusLen, capricornLen, aquariusLen, piscesLen
 
-    newln db 10
+    newln db 10, 0
     newlnLen equ $ - newln
     
 
@@ -426,22 +440,273 @@ handleZodiac:
     GETINPUT bdayPrompt, bdayPromptLen, bdayBuffer
     call parseBirthday
     call determineZodiac
-    call outputZodiac
-    call saveToFile
-
-    STDOUT newln, newlnLen
+    call outputZodiac      ; Prints to console
+    call saveToFile       ; Builds buffer and saves to file
     STDOUT savedTxt, savedTxtLen
     STDOUT newln, newlnLen
-
-
     jmp askTryAgain
 
+; MODIFIED: This function now builds the entire file buffer
+; and calls the FILEWRITE macro.
 saveToFile:
+    ; Reset content length to 0 to start building a new file
+    mov dword [contentLength], 0
+
+    ; 1. Append "Your zodiac sign is: "
+    APPEND_STR_LITERAL outputTxt
+
+    ; 2. Append the correct zodiac name
+    movzx eax, byte [zodiacInt]
+    dec eax
+    shl eax, 2
+    mov eax, [zodiacs + eax]
+    call appendString
+
+    APPEND_STR_LITERAL newln
+    APPEND_STR_LITERAL newln
+
+    ; 3. Append "Birthday: " and the birthday string
     mov eax, bdayTxt
     mov ebx, bdayBuffer
     call appendStringPair
+
+    APPEND_STR_LITERAL newln
+    APPEND_STR_LITERAL newln
+
+    ; 4. Jump to append the correct Art
+    cmp byte [zodiacInt], 1
+    je .appendAriesArt
+    cmp byte [zodiacInt], 2
+    je .appendTaurusArt
+    cmp byte [zodiacInt], 3
+    je .appendGeminiArt
+    cmp byte [zodiacInt], 4
+    je .appendCancerArt
+    cmp byte [zodiacInt], 5
+    je .appendLeoArt
+    cmp byte [zodiacInt], 6
+    je .appendVirgoArt
+    cmp byte [zodiacInt], 7
+    je .appendLibraArt
+    cmp byte [zodiacInt], 8
+    je .appendScorpioArt
+    cmp byte [zodiacInt], 9
+    je .appendSagittariusArt
+    cmp byte [zodiacInt], 10
+    je .appendCapricornArt
+    cmp byte [zodiacInt], 11
+    je .appendAquariusArt
+    cmp byte [zodiacInt], 12
+    je .appendPiscesArt
+    jmp .doneAppendArt
+
+; --- NEW SECTION: Functions to append Art to buffer ---
+.appendAriesArt:
+    APPEND_STR_LITERAL ariesArt1
+    APPEND_STR_LITERAL ariesArt2
+    APPEND_STR_LITERAL ariesArt3
+    APPEND_STR_LITERAL ariesArt4
+    jmp .doneAppendArt
+.appendTaurusArt:
+    APPEND_STR_LITERAL taurusArt1
+    APPEND_STR_LITERAL taurusArt2
+    APPEND_STR_LITERAL taurusArt3
+    APPEND_STR_LITERAL taurusArt4
+    APPEND_STR_LITERAL taurusArt5
+    APPEND_STR_LITERAL taurusArt6
+    APPEND_STR_LITERAL taurusArt7
+    jmp .doneAppendArt
+.appendGeminiArt:
+    APPEND_STR_LITERAL geminiArt1
+    APPEND_STR_LITERAL geminiArt2
+    APPEND_STR_LITERAL geminiArt3
+    APPEND_STR_LITERAL geminiArt4
+    APPEND_STR_LITERAL geminiArt5
+    jmp .doneAppendArt
+.appendCancerArt:
+    APPEND_STR_LITERAL cancerArt1
+    APPEND_STR_LITERAL cancerArt2
+    APPEND_STR_LITERAL cancerArt3
+    APPEND_STR_LITERAL cancerArt4
+    APPEND_STR_LITERAL cancerArt5
+    jmp .doneAppendArt
+.appendLeoArt:
+    APPEND_STR_LITERAL leoArt1
+    APPEND_STR_LITERAL leoArt2
+    APPEND_STR_LITERAL leoArt3
+    APPEND_STR_LITERAL leoArt4
+    APPEND_STR_LITERAL leoArt5
+    jmp .doneAppendArt
+.appendVirgoArt:
+    APPEND_STR_LITERAL virgoArt1
+    APPEND_STR_LITERAL virgoArt2
+    APPEND_STR_LITERAL virgoArt3
+    APPEND_STR_LITERAL virgoArt4
+    APPEND_STR_LITERAL virgoArt5
+    jmp .doneAppendArt
+.appendLibraArt:
+    APPEND_STR_LITERAL libraArt1
+    APPEND_STR_LITERAL libraArt2
+    APPEND_STR_LITERAL libraArt3
+    APPEND_STR_LITERAL libraArt4
+    APPEND_STR_LITERAL libraArt5
+    jmp .doneAppendArt
+.appendScorpioArt:
+    APPEND_STR_LITERAL scorpioArt1
+    APPEND_STR_LITERAL scorpioArt2
+    APPEND_STR_LITERAL scorpioArt3
+    APPEND_STR_LITERAL scorpioArt4
+    APPEND_STR_LITERAL scorpioArt5
+    jmp .doneAppendArt
+.appendSagittariusArt:
+    APPEND_STR_LITERAL sagittariusArt1
+    APPEND_STR_LITERAL sagittariusArt2
+    APPEND_STR_LITERAL sagittariusArt3
+    APPEND_STR_LITERAL sagittariusArt4
+    APPEND_STR_LITERAL sagittariusArt5
+    jmp .doneAppendArt
+.appendCapricornArt:
+    APPEND_STR_LITERAL capricornArt1
+    APPEND_STR_LITERAL capricornArt2
+    APPEND_STR_LITERAL capricornArt3
+    APPEND_STR_LITERAL capricornArt4
+    APPEND_STR_LITERAL capricornArt5
+    jmp .doneAppendArt
+.appendAquariusArt:
+    APPEND_STR_LITERAL aquariusArt1
+    APPEND_STR_LITERAL aquariusArt2
+    APPEND_STR_LITERAL aquariusArt3
+    APPEND_STR_LITERAL aquariusArt4
+    APPEND_STR_LITERAL aquariusArt5
+    jmp .doneAppendArt
+.appendPiscesArt:
+    APPEND_STR_LITERAL piscesArt1
+    APPEND_STR_LITERAL piscesArt2
+    APPEND_STR_LITERAL piscesArt3
+    APPEND_STR_LITERAL piscesArt4
+    APPEND_STR_LITERAL piscesArt5
+    jmp .doneAppendArt
+.doneAppendArt:
+    APPEND_STR_LITERAL newln
+    APPEND_STR_LITERAL newln
+
+    ; 5. Jump to append the correct Info
+    cmp byte [zodiacInt], 1
+    je .appendAriesInfo
+    cmp byte [zodiacInt], 2
+    je .appendTaurusInfo
+    cmp byte [zodiacInt], 3
+    je .appendGeminiInfo
+    cmp byte [zodiacInt], 4
+    je .appendCancerInfo
+    cmp byte [zodiacInt], 5
+    je .appendLeoInfo
+    cmp byte [zodiacInt], 6
+    je .appendVirgoInfo
+    cmp byte [zodiacInt], 7
+    je .appendLibraInfo
+    cmp byte [zodiacInt], 8
+    je .appendScorpioInfo
+    cmp byte [zodiacInt], 9
+    je .appendSagittariusInfo
+    cmp byte [zodiacInt], 10
+    je .appendCapricornInfo
+    cmp byte [zodiacInt], 11
+    je .appendAquariusInfo
+    cmp byte [zodiacInt], 12
+    je .appendPiscesInfo
+    jmp .doneAppendInfo
+
+; --- NEW SECTION: Functions to append Info to buffer ---
+.appendAriesInfo:
+    APPEND_STR_LITERAL ariesInfo1
+    APPEND_STR_LITERAL ariesInfo2
+    APPEND_STR_LITERAL ariesInfo3
+    APPEND_STR_LITERAL ariesInfo4
+    jmp .doneAppendInfo
+.appendTaurusInfo:
+    APPEND_STR_LITERAL taurusInfo1
+    APPEND_STR_LITERAL taurusInfo2
+    APPEND_STR_LITERAL taurusInfo3
+    APPEND_STR_LITERAL taurusInfo4
+    APPEND_STR_LITERAL taurusInfo5
+    jmp .doneAppendInfo
+.appendGeminiInfo:
+    APPEND_STR_LITERAL geminiInfo1
+    APPEND_STR_LITERAL geminiInfo2
+    APPEND_STR_LITERAL geminiInfo3
+    APPEND_STR_LITERAL geminiInfo4
+    jmp .doneAppendInfo
+.appendCancerInfo:
+    APPEND_STR_LITERAL cancerInfo1
+    APPEND_STR_LITERAL cancerInfo2
+    APPEND_STR_LITERAL cancerInfo3
+    APPEND_STR_LITERAL cancerInfo4
+    APPEND_STR_LITERAL cancerInfo5
+    jmp .doneAppendInfo
+.appendLeoInfo:
+    APPEND_STR_LITERAL leoInfo1
+    APPEND_STR_LITERAL leoInfo2
+    APPEND_STR_LITERAL leoInfo3
+    APPEND_STR_LITERAL leoInfo4
+    APPEND_STR_LITERAL leoInfo5
+    jmp .doneAppendInfo
+.appendVirgoInfo:
+    APPEND_STR_LITERAL virgoInfo1
+    APPEND_STR_LITERAL virgoInfo2
+    APPEND_STR_LITERAL virgoInfo3
+    APPEND_STR_LITERAL virgoInfo4
+    APPEND_STR_LITERAL virgoInfo5
+    jmp .doneAppendInfo
+.appendLibraInfo:
+    APPEND_STR_LITERAL libraInfo1
+    APPEND_STR_LITERAL libraInfo2
+    APPEND_STR_LITERAL libraInfo3
+    APPEND_STR_LITERAL libraInfo4
+    jmp .doneAppendInfo
+.appendScorpioInfo:
+    APPEND_STR_LITERAL scorpioInfo1
+    APPEND_STR_LITERAL scorpioInfo2
+    APPEND_STR_LITERAL scorpioInfo3
+    APPEND_STR_LITERAL scorpioInfo4
+    jmp .doneAppendInfo
+.appendSagittariusInfo:
+    APPEND_STR_LITERAL sagittariusInfo1
+    APPEND_STR_LITERAL sagittariusInfo2
+    APPEND_STR_LITERAL sagittariusInfo3
+    APPEND_STR_LITERAL sagittariusInfo4
+    APPEND_STR_LITERAL sagittariusInfo5
+    jmp .doneAppendInfo
+.appendCapricornInfo:
+    APPEND_STR_LITERAL capricornInfo1
+    APPEND_STR_LITERAL capricornInfo2
+    APPEND_STR_LITERAL capricornInfo3
+    APPEND_STR_LITERAL capricornInfo4
+    APPEND_STR_LITERAL capricornInfo5
+    jmp .doneAppendInfo
+.appendAquariusInfo:
+    APPEND_STR_LITERAL aquariusInfo1
+    APPEND_STR_LITERAL aquariusInfo2
+    APPEND_STR_LITERAL aquariusInfo3
+    APPEND_STR_LITERAL aquariusInfo4
+    APPEND_STR_LITERAL aquariusInfo5
+    jmp .doneAppendInfo
+.appendPiscesInfo:
+    APPEND_STR_LITERAL piscesInfo1
+    APPEND_STR_LITERAL piscesInfo2
+    APPEND_STR_LITERAL piscesInfo3
+    APPEND_STR_LITERAL piscesInfo4
+    APPEND_STR_LITERAL piscesInfo5
+    jmp .doneAppendInfo
+.doneAppendInfo:
+    APPEND_STR_LITERAL newln
+
+    ; 6. Now that the buffer is built, call FILEWRITE
+    FILEWRITE filename, contentBuffer, contentLength
+
     ret
 
+; This function remains unchanged and prints to STDOUT
 outputZodiac:
     STDOUT outputTxt, outputTxtLen
     movzx eax, byte [zodiacInt]
@@ -486,7 +751,7 @@ outputZodiac:
     je .printAquariusArt
     cmp byte [zodiacInt], 12
     je .printPiscesArt
-    jmp .doneArt            ; Jump to the end
+    jmp .doneArt          ; Jump to the end
 
 .printAriesArt:
     STDOUT ariesArt1, ariesArt1Len
@@ -982,6 +1247,7 @@ parseBirthday:
     mov [year], ebx
     ret
 
+; Appends string in EAX to contentBuffer
 appendString:
     mov edi, contentBuffer
     mov ecx, [contentLength]
@@ -1004,6 +1270,8 @@ appendString:
 
     mov [contentLength], ecx
     ret
+
+; Appends string in EAX, then string in EBX, to contentBuffer
 appendStringPair:
     mov edi, contentBuffer
     mov ecx, [contentLength]
