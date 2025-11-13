@@ -485,149 +485,149 @@ outputZodiac:
     jmp .doneArt            ; Jump to the end
 
 .printAriesArt:
-    STDOUT ariesArt1, $ - ariesArt1 - 1
+    STDOUT ariesArt1, ariesArt1Len
     STDOUT newln, newlnLen
-    STDOUT ariesArt2, $ - ariesArt2 - 1
+    STDOUT ariesArt2, ariesArt2Len
     STDOUT newln, newlnLen
-    STDOUT ariesArt3, $ - ariesArt3 - 1
+    STDOUT ariesArt3, ariesArt3Len
     STDOUT newln, newlnLen
-    STDOUT ariesArt4, $ - ariesArt4 - 1
+    STDOUT ariesArt4, ariesArt4Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printTaurusArt:
-    STDOUT taurusArt1, $ - taurusArt1 - 1
+    STDOUT taurusArt1, taurusArt1Len
     STDOUT newln, newlnLen
-    STDOUT taurusArt2, $ - taurusArt2 - 1
+    STDOUT taurusArt2, taurusArt2Len
     STDOUT newln, newlnLen
-    STDOUT taurusArt3, $ - taurusArt3 - 1
+    STDOUT taurusArt3, taurusArt3Len
     STDOUT newln, newlnLen
-    STDOUT taurusArt4, $ - taurusArt4 - 1
+    STDOUT taurusArt4, taurusArt4Len
     STDOUT newln, newlnLen
-    STDOUT taurusArt5, $ - taurusArt5 - 1
+    STDOUT taurusArt5, taurusArt5Len
     STDOUT newln, newlnLen
-    STDOUT taurusArt6, $ - taurusArt6 - 1
+    STDOUT taurusArt6, taurusArt6Len
     STDOUT newln, newlnLen
-    STDOUT taurusArt7, $ - taurusArt7 - 1
+    STDOUT taurusArt7, taurusArt7Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printGeminiArt:
-    STDOUT geminiArt1, $ - geminiArt1 - 1
+    STDOUT geminiArt1, geminiArt1Len
     STDOUT newln, newlnLen
-    STDOUT geminiArt2, $ - geminiArt2 - 1
+    STDOUT geminiArt2, geminiArt2Len
     STDOUT newln, newlnLen
-    STDOUT geminiArt3, $ - geminiArt3 - 1
+    STDOUT geminiArt3, geminiArt3Len
     STDOUT newln, newlnLen
-    STDOUT geminiArt4, $ - geminiArt4 - 1
+    STDOUT geminiArt4, geminiArt4Len
     STDOUT newln, newlnLen
-    STDOUT geminiArt5, $ - geminiArt5 - 1
+    STDOUT geminiArt5, geminiArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printCancerArt:
-    STDOUT cancerArt1, $ - cancerArt1 - 1
+    STDOUT cancerArt1, cancerArt1Len
     STDOUT newln, newlnLen
-    STDOUT cancerArt2, $ - cancerArt2 - 1
+    STDOUT cancerArt2, cancerArt2Len
     STDOUT newln, newlnLen
-    STDOUT cancerArt3, $ - cancerArt3 - 1
+    STDOUT cancerArt3, cancerArt3Len
     STDOUT newln, newlnLen
-    STDOUT cancerArt4, $ - cancerArt4 - 1
+    STDOUT cancerArt4, cancerArt4Len
     STDOUT newln, newlnLen
-    STDOUT cancerArt5, $ - cancerArt5 - 1
+    STDOUT cancerArt5, cancerArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printLeoArt:
-    STDOUT leoArt1, $ - leoArt1 - 1
+    STDOUT leoArt1, leoArt1Len
     STDOUT newln, newlnLen
-    STDOUT leoArt2, $ - leoArt2 - 1
+    STDOUT leoArt2, leoArt2Len
     STDOUT newln, newlnLen
-    STDOUT leoArt3, $ - leoArt3 - 1
+    STDOUT leoArt3, leoArt3Len
     STDOUT newln, newlnLen
-    STDOUT leoArt4, $ - leoArt4 - 1
+    STDOUT leoArt4, leoArt4Len
     STDOUT newln, newlnLen
-    STDOUT leoArt5, $ - leoArt5 - 1
+    STDOUT leoArt5, leoArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printVirgoArt:
-    STDOUT virgoArt1, $ - virgoArt1 - 1
+    STDOUT virgoArt1, virgoArt1Len
     STDOUT newln, newlnLen
-    STDOUT virgoArt2, $ - virgoArt2 - 1
+    STDOUT virgoArt2, virgoArt2Len
     STDOUT newln, newlnLen
-    STDOUT virgoArt3, $ - virgoArt3 - 1
+    STDOUT virgoArt3, virgoArt3Len
     STDOUT newln, newlnLen
-    STDOUT virgoArt4, $ - virgoArt4 - 1
+    STDOUT virgoArt4, virgoArt4Len
     STDOUT newln, newlnLen
-    STDOUT virgoArt5, $ - virgoArt5 - 1
+    STDOUT virgoArt5, virgoArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printLibraArt:
-    STDOUT libraArt1, $ - libraArt1 - 1
+    STDOUT libraArt1, libraArt1Len
     STDOUT newln, newlnLen
-    STDOUT libraArt2, $ - libraArt2 - 1
+    STDOUT libraArt2, libraArt2Len
     STDOUT newln, newlnLen
-    STDOUT libraArt3, $ - libraArt3 - 1
+    STDOUT libraArt3, libraArt3Len
     STDOUT newln, newlnLen
-    STDOUT libraArt4, $ - libraArt4 - 1
+    STDOUT libraArt4, libraArt4Len
     STDOUT newln, newlnLen
-    STDOUT libraArt5, $ - libraArt5 - 1
+    STDOUT libraArt5, libraArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printScorpioArt:
-    STDOUT scorpioArt1, $ - scorpioArt1 - 1
+    STDOUT scorpioArt1, scorpioArt1Len
     STDOUT newln, newlnLen
-    STDOUT scorpioArt2, $ - scorpioArt2 - 1
+    STDOUT scorpioArt2, scorpioArt2Len
     STDOUT newln, newlnLen
-    STDOUT scorpioArt3, $ - scorpioArt3 - 1
+    STDOUT scorpioArt3, scorpioArt3Len
     STDOUT newln, newlnLen
-    STDOUT scorpioArt4, $ - scorpioArt4 - 1
+    STDOUT scorpioArt4, scorpioArt4Len
     STDOUT newln, newlnLen
-    STDOUT scorpioArt5, $ - scorpioArt5 - 1
+    STDOUT scorpioArt5, scorpioArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printSagittariusArt:
-    STDOUT sagittariusArt1, $ - sagittariusArt1 - 1
+    STDOUT sagittariusArt1, sagittariusArt1Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusArt2, $ - sagittariusArt2 - 1
+    STDOUT sagittariusArt2, sagittariusArt2Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusArt3, $ - sagittariusArt3 - 1
+    STDOUT sagittariusArt3, sagittariusArt3Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusArt4, $ - sagittariusArt4 - 1
+    STDOUT sagittariusArt4, sagittariusArt4Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusArt5, $ - sagittariusArt5 - 1
+    STDOUT sagittariusArt5, sagittariusArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printCapricornArt:
-    STDOUT capricornArt1, $ - capricornArt1 - 1
+    STDOUT capricornArt1, capricornArt1Len
     STDOUT newln, newlnLen
-    STDOUT capricornArt2, $ - capricornArt2 - 1
+    STDOUT capricornArt2, capricornArt2Len
     STDOUT newln, newlnLen
-    STDOUT capricornArt3, $ - capricornArt3 - 1
+    STDOUT capricornArt3, capricornArt3Len
     STDOUT newln, newlnLen
-    STDOUT capricornArt4, $ - capricornArt4 - 1
+    STDOUT capricornArt4, capricornArt4Len
     STDOUT newln, newlnLen
-    STDOUT capricornArt5, $ - capricornArt5 - 1
+    STDOUT capricornArt5, capricornArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printAquariusArt:
-    STDOUT aquariusArt1, $ - aquariusArt1 - 1
+    STDOUT aquariusArt1, aquariusArt1Len
     STDOUT newln, newlnLen
-    STDOUT aquariusArt2, $ - aquariusArt2 - 1
+    STDOUT aquariusArt2, aquariusArt2Len
     STDOUT newln, newlnLen
-    STDOUT aquariusArt3, $ - aquariusArt3 - 1
+    STDOUT aquariusArt3, aquariusArt3Len
     STDOUT newln, newlnLen
-    STDOUT aquariusArt4, $ - aquariusArt4 - 1
+    STDOUT aquariusArt4, aquariusArt4Len
     STDOUT newln, newlnLen
-    STDOUT aquariusArt5, $ - aquariusArt5 - 1
+    STDOUT aquariusArt5, aquariusArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .printPiscesArt:
-    STDOUT piscesArt1, $ - piscesArt1 - 1
+    STDOUT piscesArt1, piscesArt1Len
     STDOUT newln, newlnLen
-    STDOUT piscesArt2, $ - piscesArt2 - 1
+    STDOUT piscesArt2, piscesArt2Len
     STDOUT newln, newlnLen
-    STDOUT piscesArt3, $ - piscesArt3 - 1
+    STDOUT piscesArt3, piscesArt3Len
     STDOUT newln, newlnLen
-    STDOUT piscesArt4, $ - piscesArt4 - 1
+    STDOUT piscesArt4, piscesArt4Len
     STDOUT newln, newlnLen
-    STDOUT piscesArt5, $ - piscesArt5 - 1
+    STDOUT piscesArt5, piscesArt5Len
     STDOUT newln, newlnLen
     jmp .doneArt
 .doneArt:
@@ -662,140 +662,141 @@ outputZodiac:
     je .printPiscesInfo
     jmp .doneInfo
 
+
 .printAriesInfo:
-    STDOUT ariesInfo1, $ - ariesInfo1 - 1
+    STDOUT ariesInfo1, ariesInfo1Len
     STDOUT newln, newlnLen
-    STDOUT ariesInfo2, $ - ariesInfo2 - 1
+    STDOUT ariesInfo2, ariesInfo2Len
     STDOUT newln, newlnLen
-    STDOUT ariesInfo3, $ - ariesInfo3 - 1
+    STDOUT ariesInfo3, ariesInfo3Len
     STDOUT newln, newlnLen
-    STDOUT ariesInfo4, $ - ariesInfo4 - 1
+    STDOUT ariesInfo4, ariesInfo4Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printTaurusInfo:
-    STDOUT taurusInfo1, $ - taurusInfo1 - 1
+    STDOUT taurusInfo1, taurusInfo1Len
     STDOUT newln, newlnLen
-    STDOUT taurusInfo2, $ - taurusInfo2 - 1
+    STDOUT taurusInfo2, taurusInfo2Len
     STDOUT newln, newlnLen
-    STDOUT taurusInfo3, $ - taurusInfo3 - 1
+    STDOUT taurusInfo3, taurusInfo3Len
     STDOUT newln, newlnLen
-    STDOUT taurusInfo4, $ - taurusInfo4 - 1
+    STDOUT taurusInfo4, taurusInfo4Len
     STDOUT newln, newlnLen
-    STDOUT taurusInfo5, $ - taurusInfo5 - 1
+    STDOUT taurusInfo5, taurusInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printGeminiInfo:
-    STDOUT geminiInfo1, $ - geminiInfo1 - 1
+    STDOUT geminiInfo1, geminiInfo1Len
     STDOUT newln, newlnLen
-    STDOUT geminiInfo2, $ - geminiInfo2 - 1
+    STDOUT geminiInfo2, geminiInfo2Len
     STDOUT newln, newlnLen
-    STDOUT geminiInfo3, $ - geminiInfo3 - 1
+    STDOUT geminiInfo3, geminiInfo3Len
     STDOUT newln, newlnLen
-    STDOUT geminiInfo4, $ - geminiInfo4 - 1
+    STDOUT geminiInfo4, geminiInfo4Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printCancerInfo:
-    STDOUT cancerInfo1, $ - cancerInfo1 - 1
+    STDOUT cancerInfo1, cancerInfo1Len
     STDOUT newln, newlnLen
-    STDOUT cancerInfo2, $ - cancerInfo2 - 1
+    STDOUT cancerInfo2, cancerInfo2Len
     STDOUT newln, newlnLen
-    STDOUT cancerInfo3, $ - cancerInfo3 - 1
+    STDOUT cancerInfo3, cancerInfo3Len
     STDOUT newln, newlnLen
-    STDOUT cancerInfo4, $ - cancerInfo4 - 1
+    STDOUT cancerInfo4, cancerInfo4Len
     STDOUT newln, newlnLen
-    STDOUT cancerInfo5, $ - cancerInfo5 - 1
+    STDOUT cancerInfo5, cancerInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printLeoInfo:
-    STDOUT leoInfo1, $ - leoInfo1 - 1
+    STDOUT leoInfo1, leoInfo1Len
     STDOUT newln, newlnLen
-    STDOUT leoInfo2, $ - leoInfo2 - 1
+    STDOUT leoInfo2, leoInfo2Len
     STDOUT newln, newlnLen
-    STDOUT leoInfo3, $ - leoInfo3 - 1
+    STDOUT leoInfo3, leoInfo3Len
     STDOUT newln, newlnLen
-    STDOUT leoInfo4, $ - leoInfo4 - 1
+    STDOUT leoInfo4, leoInfo4Len
     STDOUT newln, newlnLen
-    STDOUT leoInfo5, $ - leoInfo5 - 1
+    STDOUT leoInfo5, leoInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printVirgoInfo:
-    STDOUT virgoInfo1, $ - virgoInfo1 - 1
+    STDOUT virgoInfo1, virgoInfo1Len
     STDOUT newln, newlnLen
-    STDOUT virgoInfo2, $ - virgoInfo2 - 1
+    STDOUT virgoInfo2, virgoInfo2Len
     STDOUT newln, newlnLen
-    STDOUT virgoInfo3, $ - virgoInfo3 - 1
+    STDOUT virgoInfo3, virgoInfo3Len
     STDOUT newln, newlnLen
-    STDOUT virgoInfo4, $ - virgoInfo4 - 1
+    STDOUT virgoInfo4, virgoInfo4Len
     STDOUT newln, newlnLen
-    STDOUT virgoInfo5, $ - virgoInfo5 - 1
+    STDOUT virgoInfo5, virgoInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printLibraInfo:
-    STDOUT libraInfo1, $ - libraInfo1 - 1
+    STDOUT libraInfo1, libraInfo1Len
     STDOUT newln, newlnLen
-    STDOUT libraInfo2, $ - libraInfo2 - 1
+    STDOUT libraInfo2, libraInfo2Len
     STDOUT newln, newlnLen
-    STDOUT libraInfo3, $ - libraInfo3 - 1
+    STDOUT libraInfo3, libraInfo3Len
     STDOUT newln, newlnLen
-    STDOUT libraInfo4, $ - libraInfo4 - 1
+    STDOUT libraInfo4, libraInfo4Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printScorpioInfo:
-    STDOUT scorpioInfo1, $ - scorpioInfo1 - 1
+    STDOUT scorpioInfo1, scorpioInfo1Len
     STDOUT newln, newlnLen
-    STDOUT scorpioInfo2, $ - scorpioInfo2 - 1
+    STDOUT scorpioInfo2, scorpioInfo2Len
     STDOUT newln, newlnLen
-    STDOUT scorpioInfo3, $ - scorpioInfo3 - 1
+    STDOUT scorpioInfo3, scorpioInfo3Len
     STDOUT newln, newlnLen
-    STDOUT scorpioInfo4, $ - scorpioInfo4 - 1
+    STDOUT scorpioInfo4, scorpioInfo4Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printSagittariusInfo:
-    STDOUT sagittariusInfo1, $ - sagittariusInfo1 - 1
+    STDOUT sagittariusInfo1, sagittariusInfo1Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusInfo2, $ - sagittariusInfo2 - 1
+    STDOUT sagittariusInfo2, sagittariusInfo2Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusInfo3, $ - sagittariusInfo3 - 1
+    STDOUT sagittariusInfo3, sagittariusInfo3Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusInfo4, $ - sagittariusInfo4 - 1
+    STDOUT sagittariusInfo4, sagittariusInfo4Len
     STDOUT newln, newlnLen
-    STDOUT sagittariusInfo5, $ - sagittariusInfo5 - 1
+    STDOUT sagittariusInfo5, sagittariusInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printCapricornInfo:
-    STDOUT capricornInfo1, $ - capricornInfo1 - 1
+    STDOUT capricornInfo1, capricornInfo1Len
     STDOUT newln, newlnLen
-    STDOUT capricornInfo2, $ - capricornInfo2 - 1
+    STDOUT capricornInfo2, capricornInfo2Len
     STDOUT newln, newlnLen
-    STDOUT capricornInfo3, $ - capricornInfo3 - 1
+    STDOUT capricornInfo3, capricornInfo3Len
     STDOUT newln, newlnLen
-    STDOUT capricornInfo4, $ - capricornInfo4 - 1
+    STDOUT capricornInfo4, capricornInfo4Len
     STDOUT newln, newlnLen
-    STDOUT capricornInfo5, $ - capricornInfo5 - 1
+    STDOUT capricornInfo5, capricornInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printAquariusInfo:
-    STDOUT aquariusInfo1, $ - aquariusInfo1 - 1
+    STDOUT aquariusInfo1, aquariusInfo1Len
     STDOUT newln, newlnLen
-    STDOUT aquariusInfo2, $ - aquariusInfo2 - 1
+    STDOUT aquariusInfo2, aquariusInfo2Len
     STDOUT newln, newlnLen
-    STDOUT aquariusInfo3, $ - aquariusInfo3 - 1
+    STDOUT aquariusInfo3, aquariusInfo3Len
     STDOUT newln, newlnLen
-    STDOUT aquariusInfo4, $ - aquariusInfo4 - 1
+    STDOUT aquariusInfo4, aquariusInfo4Len
     STDOUT newln, newlnLen
-    STDOUT aquariusInfo5, $ - aquariusInfo5 - 1
+    STDOUT aquariusInfo5, aquariusInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .printPiscesInfo:
-    STDOUT piscesInfo1, $ - piscesInfo1 - 1
+    STDOUT piscesInfo1, piscesInfo1Len
     STDOUT newln, newlnLen
-    STDOUT piscesInfo2, $ - piscesInfo2 - 1
+    STDOUT piscesInfo2, piscesInfo2Len
     STDOUT newln, newlnLen
-    STDOUT piscesInfo3, $ - piscesInfo3 - 1
+    STDOUT piscesInfo3, piscesInfo3Len
     STDOUT newln, newlnLen
-    STDOUT piscesInfo4, $ - piscesInfo4 - 1
+    STDOUT piscesInfo4, piscesInfo4Len
     STDOUT newln, newlnLen
-    STDOUT piscesInfo5, $ - piscesInfo5 - 1
+    STDOUT piscesInfo5, piscesInfo5Len
     STDOUT newln, newlnLen
     jmp .doneInfo
 .doneInfo:
