@@ -5,7 +5,6 @@
     mov edx, %2
     int 0x80
 %endmacro
-
 %macro STDIN 2
     mov eax, 3
     xor ebx, ebx
@@ -13,42 +12,66 @@
     mov edx, %2
     int 0x80
 %endmacro
-
-%macro FILEIN 3
+%macro FILEWRITE 3
     mov eax, 8
-    mov ebx, %1
-    mov ecx, 0777
+    mov ebx, %1     
+    mov ecx, 0777   
     int 0x80
 
-    mov ebx, eax
+    mov ebx, eax    
     mov eax, 4
-    mov ecx, %2
-    mov edx, [%3]
+    mov ecx, %2     
+    mov edx, [%3]   
     int 0x80
 
     mov eax, 6
     int 0x80
 %endmacro
-
 %macro PRINTLN 2
     STDOUT %1, %2
     STDOUT newln, newlnLen
 %endmacro
-
 %macro GETINPUT 3
     STDOUT %1, %2
     STDIN %3, RESERVE_BYTE_SIZE
-
     dec eax
     mov byte [%3 + eax], 0
 %endmacro
+%macro APPEND_STR_LITERAL 1
+    mov eax, %1
+    call appendString
+%endmacro
+%macro PRINT_LOOP_ART 3
+    movzx ecx, byte [%1]
+    mov edi, %2
+    mov esi, %3
+    jmp .printLoopArt
+%endmacro
+%macro PRINT_LOOP_INFO 3
+    movzx ecx, byte [%1]
+    mov edi, %2 
+    mov esi, %3
+    jmp .printLoopInfo
+%endmacro 
+%macro APPEND_LOOP_ART 2
+    movzx ecx, byte [%1]
+    mov esi, %2
+    jmp .appendLoopArt
+%endmacro
+%macro APPEND_LOOP_INFO 2
+    movzx ecx, byte [%1]
+    mov esi, %2
+    jmp .appendLoopInfo
+%endmacro
 
 section .data
-    filename db "zodiac.txt"
-
     RESERVE_BYTE_SIZE equ 256
     cls db 27, '[2J', 27, '[H'
     clsLen equ $ - cls
+    filename db "zodiac.txt", 0
+
+    newln db 10, 0
+    newlnLen equ $ - newln
 
     menuTitle db "[ <-=-=- Main Menu -=-=-> ]", 10, 0
     menuTitleLen equ $ - menuTitle
@@ -61,25 +84,18 @@ section .data
 
     promptChoice db "Enter your choice: ", 0
     promptChoiceLen equ $ - promptChoice
-
     tryAgainMsg db "Do you want to run the program again? (y/n): ", 0
     tryAgainMsgLen equ $ - tryAgainMsg
-
     invalidMsg db "Invalid choice. Please try again.", 10, 0
     invalidMsgLen equ $ - invalidMsg
-
     bdayPrompt db "Enter birthday (MM-DD-YYYY): ", 0
     bdayPromptLen equ $ - bdayPrompt
-
     msgDone db "Parsing complete!", 10, 0
     msgDoneLen equ $ - msgDone
-
     outputTxt db "Your zodiac sign is: ", 0
     outputTxtLen equ $ - outputTxt
-
     savedTxt db "Output successfully saved in zodiac.txt. Check it out for more information about your zodiac sign!", 10, 0
     savedTxtLen equ $ - savedTxt
-
     bdayTxt db "Birthday: ", 0
     bdayTxtLen equ $ - bdayTxt
 
@@ -108,15 +124,20 @@ section .data
     pisces db "Pisces", 0
     piscesLen equ $ - pisces
     
-    ; TODO: Separate the sentences into individual ones. At least 3
-    ariesInfo1       db "Aries is the student who raises their hand first, even if", 0
+    zodiacs dd aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces
+    zodiacsLen db ariesLen, taurusLen, geminiLen, cancerLen, leoLen, virgoLen, libraLen, scorpioLen, sagittariusLen, capricornLen, aquariusLen, piscesLen
+    
+    ariesInfo1      db "Aries is the student who raises their hand first, even if", 0
     ariesInfo1Len equ $ - ariesInfo1
-    ariesInfo2       db "they're not 100% sure of the answer. They're the competitive", 0
+    ariesInfo2      db "they're not 100% sure of the answer. They're the competitive", 0
     ariesInfo2Len equ $ - ariesInfo2
-    ariesInfo3       db "one who turns every group project into a race and will", 0
+    ariesInfo3      db "one who turns every group project into a race and will", 0
     ariesInfo3Len equ $ - ariesInfo3
-    ariesInfo4       db "probably organize the study group (and the party afterwards)."
+    ariesInfo4      db "probably organize the study group (and the party afterwards)."
     ariesInfo4Len equ $ - ariesInfo4
+    ariesInfos     dd ariesInfo1, ariesInfo2, ariesInfo3, ariesInfo4
+    ariesInfosLen  dd ariesInfo1Len, ariesInfo2Len, ariesInfo3Len, ariesInfo4Len
+    ariesInfoCount dd 4
 
     taurusInfo1      db "Taurus is the super-reliable study buddy who always has the", 0
     taurusInfo1Len equ $ - taurusInfo1
@@ -128,6 +149,9 @@ section .data
     taurusInfo4Len equ $ - taurusInfo4
     taurusInfo5      db "comfortable study spot in the library.", 0
     taurusInfo5Len equ $ - taurusInfo5
+    taurusInfos     dd taurusInfo1, taurusInfo2, taurusInfo3, taurusInfo4, taurusInfo5
+    taurusInfosLen  dd taurusInfo1Len, taurusInfo2Len, taurusInfo3Len, taurusInfo4Len, taurusInfo5Len
+    taurusInfoCount db 5
 
     geminiInfo1      db "Gemini is that student who seems to be in five different clubs", 0
     geminiInfo1Len equ $ - geminiInfo1
@@ -137,6 +161,9 @@ section .data
     geminiInfo3Len equ $ - geminiInfo3
     geminiInfo4      db "hour before class after changing their topic three times.", 0
     geminiInfo4Len equ $ - geminiInfo4
+    geminiInfos     dd geminiInfo1, geminiInfo2, geminiInfo3, geminiInfo4
+    geminiInfosLen  dd geminiInfo1Len, geminiInfo2Len, geminiInfo3Len, geminiInfo4Len
+    geminiInfoCount db 4
 
     cancerInfo1      db "Cancer is the 'parent' of the study group, always making sure", 0
     cancerInfo1Len equ $ - cancerInfo1
@@ -148,46 +175,61 @@ section .data
     cancerInfo4Len equ $ - cancerInfo4
     cancerInfo5      db "appreciate a quiet, cozy study space.", 0
     cancerInfo5Len equ $ - cancerInfo5
+    cancerInfos     dd cancerInfo1, cancerInfo2, cancerInfo3, cancerInfo4, cancerInfo5
+    cancerInfosLen  dd cancerInfo1Len, cancerInfo2Len, cancerInfo3Len, cancerInfo4Len, cancerInfo5Len
+    cancerInfoCount db 5
 
-    leoInfo1         db "Leo is the student who volunteers to present the group project and", 0
+    leoInfo1        db "Leo is the student who volunteers to present the group project and", 0
     leoInfo1Len equ $ - leoInfo1
-    leoInfo2         db "probably ends up directing it, too. They have a flair for the", 0
+    leoInfo2        db "probably ends up directing it, too. They have a flair for the", 0
     leoInfo2Len equ $ - leoInfo2
-    leoInfo3         db "dramatic and aren't afraid of the spotlight, making them a natural", 0
+    leoInfo3        db "dramatic and aren't afraid of the spotlight, making them a natural", 0
     leoInfo3Len equ $ - leoInfo3
-    leoInfo4         db "class leader. They're also surprisingly generous and will happily", 0
+    leoInfo4        db "class leader. They're also surprisingly generous and will happily", 0
     leoInfo4Len equ $ - leoInfo4
-    leoInfo5         db "share their (brilliant) notes.", 0
+    leoInfo5        db "share their (brilliant) notes.", 0
     leoInfo5Len equ $ - leoInfo5
+    leoInfos        dd leoInfo1, leoInfo2, leoInfo3, leoInfo4, leoInfo5
+    leoInfosLen     dd leoInfo1Len, leoInfo2Len, leoInfo3Len, leoInfo4Len, leoInfo5Len
+    leoInfoCount    db 5
 
-    virgoInfo1       db "Virgo is the student with the perfectly color-coded notes and a", 0
+    virgoInfo1      db "Virgo is the student with the perfectly color-coded notes and a", 0
     virgoInfo1Len equ $ - virgoInfo1
-    virgoInfo2       db "planner that's organized down to the minute. They're the one who", 0
+    virgoInfo2      db "planner that's organized down to the minute. They're the one who", 0
     virgoInfo2Len equ $ - virgoInfo2
-    virgoInfo3       db "asks the professor a question that clarifies the entire lesson", 0
+    virgoInfo3      db "asks the professor a question that clarifies the entire lesson", 0
     virgoInfo3Len equ $ - virgoInfo3
-    virgoInfo4       db "for everyone. You absolutely want them to proofread your paper", 0
+    virgoInfo4      db "for everyone. You absolutely want them to proofread your paper", 0
     virgoInfo4Len equ $ - virgoInfo4
-    virgoInfo5       db "before you submit it.", 0
+    virgoInfo5      db "before you sumbit it.", 0
     virgoInfo5Len equ $ - virgoInfo5
+    virgoInfos      dd virgoInfo1, virgoInfo2, virgoInfo3, virgoInfo4, virgoInfo5
+    virgoInfosLen   dd virgoInfo1Len, virgoInfo2Len, virgoInfo3Len, virgoInfo4Len, virgoInfo5Len
+    virgoInfoCount  db 5
 
-    libraInfo1       db "Libra is the diplomat of every group project, making sure everyone", 0
+    libraInfo1      db "Libra is the diplomat of every group project, making sure everyone", 0
     libraInfo1Len equ $ - libraInfo1
-    libraInfo2       db "is getting along and the workload is fair. They have a natural", 0
+    libraInfo2      db "is getting along and the workload is fair. They have a natural", 0
     libraInfo2Len equ $ - libraInfo2
-    libraInfo3       db "charm that professors love, but they might spend more time debating", 0
+    libraInfo3      db "charm that professors love, but they might spend more time debating", 0
     libraInfo3Len equ $ - libraInfo3
-    libraInfo4       db "which font to use than actually writing the paper.", 0
+    libraInfo4      db "which font to use than actually writing the paper.", 0
     libraInfo4Len equ $ - libraInfo4
+    libraInfos      dd libraInfo1, libraInfo2, libraInfo3, libraInfo4
+    libraInfosLen   dd libraInfo1Len, libraInfo2Len, libraInfo3Len, libraInfo4Len
+    libraInfoCount  db 4
 
-    scorpioInfo1     db "Scorpio is the focused, intense student who sits in the back and", 0
+    scorpioInfo1    db "Scorpio is the focused, intense student who sits in the back and", 0
     scorpioInfo1Len equ $ - scorpioInfo1
-    scorpioInfo2     db "misses nothing. They are a research master who will dig up obscure", 0
+    scorpioInfo2    db "misses nothing. They are a research master who will dig up obscure", 0
     scorpioInfo2Len equ $ - scorpioInfo2
-    scorpioInfo3     db "facts for a term paper that impress the professor. Don't even", 0
+    scorpioInfo3    db "facts for a term paper that impress the professor. Don't even", 0
     scorpioInfo3Len equ $ - scorpioInfo3
-    scorpioInfo4     db "bother asking for their grades; they're a well-kept secret.", 0
+    scorpioInfo4    db "bother asking for their grades; they're a well-kept secret.", 0
     scorpioInfo4Len equ $ - scorpioInfo4
+    scorpioInfos    dd scorpioInfo1, scorpioInfo2, scorpioInfo3, scorpioInfo4
+    scorpioInfosLen dd scorpioInfo1Len, scorpioInfo2Len, scorpioInfo3Len, scorpioInfo4Len
+    scorpioInfoCount db 4
 
     sagittariusInfo1 db "Sagittarius is the student who asks the big, philosophical question", 0
     sagittariusInfo1Len equ $ - sagittariusInfo1
@@ -199,17 +241,23 @@ section .data
     sagittariusInfo4Len equ $ - sagittariusInfo4
     sagittariusInfo5 db "for a study abroad program just for the adventure.", 0
     sagittariusInfo5Len equ $ - sagittariusInfo5
+    sagittariusInfos    dd sagittariusInfo1, sagittariusInfo2, sagittariusInfo3, sagittariusInfo4, sagittariusInfo5
+    sagittariusInfosLen dd sagittariusInfo1Len, sagittariusInfo2Len, sagittariusInfo3Len, sagittariusInfo4Len, sagittariusInfo5Len
+    sagittariusInfoCount db 5
 
-    capricornInfo1   db "Capricorn is the student who already has a five-year career plan", 0
+    capricornInfo1  db "Capricorn is the student who already has a five-year career plan", 0
     capricornInfo1Len equ $ - capricornInfo1
-    capricornInfo2   db "and an internship lined up in their first year. They're incredibly", 0
+    capricornInfo2  db "and an internship lined up in their first year. They're incredibly", 0
     capricornInfo2Len equ $ - capricornInfo2
-    capricornInfo3   db "disciplined, always the last to leave the library, and will create", 0
+    capricornInfo3  db "disciplined, always the last to leave the library, and will create", 0
     capricornInfo3Len equ $ - capricornInfo3
-    capricornInfo4   db "a detailed spreadsheet for the group project. They aren't", 0
+    capricornInfo4  db "a detailed spreadsheet for the group project. They aren't", 0
     capricornInfo4Len equ $ - capricornInfo4
-    capricornInfo5   db "just here to pass; they're here to be top of the class.", 0
+    capricornInfo5  db "just here to pass; they're here to be top of the class.", 0
     capricornInfo5Len equ $ - capricornInfo5
+    capricornInfos      dd capricornInfo1, capricornInfo2, capricornInfo3, capricornInfo4, capricornInfo5
+    capricornInfosLen   dd capricornInfo1Len, capricornInfo2Len, capricornInfo3Len, capricornInfo4Len, capricornInfo5Len
+    capricornInfoCount  db 5
 
     aquariusInfo1    db "Aquarius is the student who comes up with a brilliantly original", 0
     aquariusInfo1Len equ $ - aquariusInfo1
@@ -221,6 +269,9 @@ section .data
     aquariusInfo4Len equ $ - aquariusInfo4
     aquariusInfo5    db "thinking about the big picture, not just the test.", 0
     aquariusInfo5Len equ $ - aquariusInfo5
+    aquariusInfos       dd aquariusInfo1, aquariusInfo2, aquariusInfo3, aquariusInfo4, aquariusInfo5
+    aquariusInfosLen    dd aquariusInfo1Len, aquariusInfo2Len, aquariusInfo3Len, aquariusInfo4Len, aquariusInfo5Len
+    aquariusInfoCount   db 5
 
     piscesInfo1      db "Pisces is the creative, day-dreamy student who connects the course", 0
     piscesInfo1Len equ $ - piscesInfo1
@@ -232,6 +283,9 @@ section .data
     piscesInfo4Len equ $ - piscesInfo4
     piscesInfo5      db "attention, but they're intuitively absorbing all the information.", 0
     piscesInfo5Len equ $ - piscesInfo5
+    piscesInfos     dd piscesInfo1, piscesInfo2, piscesInfo3, piscesInfo4, piscesInfo5
+    piscesInfosLen  dd piscesInfo1Len, piscesInfo2Len, piscesInfo3Len, piscesInfo4Len, piscesInfo5Len
+    piscesInfoCount db 5
 
     ; aries
     ariesArt1 db " .-.   .-. ", 0
@@ -242,34 +296,43 @@ section .data
     ariesArt3Len equ $ - ariesArt3
     ariesArt4 db "     |     ", 0
     ariesArt4Len equ $ - ariesArt4
+    ariesArts     dd ariesArt1, ariesArt2, ariesArt3, ariesArt4 
+    ariesArtsLen  dd ariesArt1Len, ariesArt2Len, ariesArt3Len, ariesArt4Len
+    ariesArtCount db 4 
 
     ; taurus
-    taurusArt1 db ".-.       .-.", 0
+    taurusArt1 db ".-.     .-.", 0
     taurusArt1Len equ $ - taurusArt1
-    taurusArt2 db "  \.     ./  ", 0
+    taurusArt2 db " \.     ./  ", 0
     taurusArt2Len equ $ - taurusArt2
-    taurusArt3 db "    \___/    ", 0
+    taurusArt3 db "   \___/    ", 0
     taurusArt3Len equ $ - taurusArt3
-    taurusArt4 db "   .'   '.   ", 0
+    taurusArt4 db "  .'   '.   ", 0
     taurusArt4Len equ $ - taurusArt4
-    taurusArt5 db "  :       :  ", 0
+    taurusArt5 db " :       :  ", 0
     taurusArt5Len equ $ - taurusArt5
-    taurusArt6 db "  :       :  ", 0
+    taurusArt6 db " :       :  ", 0
     taurusArt6Len equ $ - taurusArt6
-    taurusArt7 db "   '.___.'   ", 0
+    taurusArt7 db "  '.___.'   ", 0
     taurusArt7Len equ $ - taurusArt7
+    taurusArts      dd taurusArt1, taurusArt2, taurusArt3, taurusArt4, taurusArt5, taurusArt6, taurusArt7
+    taurusArtsLen   dd taurusArt1Len, taurusArt2Len, taurusArt3Len, taurusArt4Len, taurusArt5Len, taurusArt6Len, taurusArt7Len
+    taurusArtCount  db 7
 
     ; gemini
     geminiArt1 db "'--.__.--'", 0
     geminiArt1Len equ $ - geminiArt1
-    geminiArt2 db "    ||    ", 0
+    geminiArt2 db "    ||     ", 0
     geminiArt2Len equ $ - geminiArt2
-    geminiArt3 db "    ||    ", 0 
+    geminiArt3 db "    ||     ", 0
     geminiArt3Len equ $ - geminiArt3
-    geminiArt4 db "    ||    ", 0
+    geminiArt4 db "    ||     ", 0
     geminiArt4Len equ $ - geminiArt4
     geminiArt5 db ".--'  '--.", 0
     geminiArt5Len equ $ - geminiArt5
+    geminiArts      dd geminiArt1, geminiArt2, geminiArt3, geminiArt4, geminiArt5
+    geminiArtsLen   dd geminiArt1Len, geminiArt2Len, geminiArt3Len, geminiArt4Len, geminiArt5Len
+    geminiArtCount  db 5
 
     ; cancer
     cancerArt1 db "  ..---.  ", 0
@@ -278,13 +341,16 @@ section .data
     cancerArt2Len equ $ - cancerArt2
     cancerArt3 db " (*}  {*) ", 0
     cancerArt3Len equ $ - cancerArt3
-    cancerArt4 db "'.    //  ", 0
+    cancerArt4 db "'.   //   ", 0
     cancerArt4Len equ $ - cancerArt4
     cancerArt5 db "  `---''  ", 0
     cancerArt5Len equ $ - cancerArt5
+    cancerArts      dd cancerArt1, cancerArt2, cancerArt3, cancerArt4, cancerArt5
+    cancerArtsLen   dd cancerArt1Len, cancerArt2Len, cancerArt3Len, cancerArt4Len, cancerArt5Len
+    cancerArtCount  db 5
 
     ; leo
-    leoArt1 db "  .-'-. ", 0
+    leoArt1 db "   .-'-. ", 0
     leoArt1Len equ $ - leoArt1
     leoArt2 db " (.   ')", 0
     leoArt2Len equ $ - leoArt2
@@ -294,18 +360,24 @@ section .data
     leoArt4Len equ $ - leoArt4
     leoArt5 db "     '-.", 0
     leoArt5Len equ $ - leoArt5
+    leoArts         dd leoArt1, leoArt2, leoArt3, leoArt4, leoArt5
+    leoArtsLen      dd leoArt1Len, leoArt2Len, leoArt3Len, leoArt4Len, leoArt5Len
+    leoArtCount     db 5
 
     ; virgo
     virgoArt1 db "' `:--.__.  ", 0
     virgoArt1Len equ $ - virgoArt1
-    virgoArt2 db "   |  |  ;_.", 0 
+    virgoArt2 db "   |  |  ;_.", 0
     virgoArt2Len equ $ - virgoArt2
-    virgoArt3 db "   (  (. ( )", 0 
+    virgoArt3 db "   (  (. ( )", 0
     virgoArt3Len equ $ - virgoArt3
-    virgoArt4 db "   |  |  |/", 0 
+    virgoArt4 db "   |  |  |/", 0
     virgoArt4Len equ $ - virgoArt4
-    virgoArt5 db "   '  '  '  (J", 0 
+    virgoArt5 db "   '  '  '  (J", 0
     virgoArt5Len equ $ - virgoArt5
+    virgoArts       dd virgoArt1, virgoArt2, virgoArt3, virgoArt4, virgoArt5
+    virgoArtsLen    dd virgoArt1Len, virgoArt2Len, virgoArt3Len, virgoArt4Len, virgoArt5Len
+    virgoArtCount   db 5
 
     ; libra
     libraArt1 db "    _--_    ", 0
@@ -318,57 +390,72 @@ section .data
     libraArt4Len equ $ - libraArt4
     libraArt5 db "'`        `'", 0
     libraArt5Len equ $ - libraArt5
-    
+    libraArts       dd libraArt1, libraArt2, libraArt3, libraArt4, libraArt5
+    libraArtsLen    dd libraArt1Len, libraArt2Len, libraArt3Len, libraArt4Len, libraArt5Len
+    libraArtCount   db 5
+
     ; scorpio
-    scorpioArt1 db "`:--.--.        ", 0 
-    scorpioArt1Len equ $ - scorpioArt1 
-    scorpioArt2 db " |  |  |        ", 0 
-    scorpioArt2Len equ $ - scorpioArt2 
-    scorpioArt3 db " |  |  |        ", 0 
-    scorpioArt3Len equ $ - scorpioArt3 
-    scorpioArt4 db " |  :  |\   ./\,", 0 
-    scorpioArt4Len equ $ - scorpioArt4 
-    scorpioArt5 db "         `==)|| ", 0 
-    scorpioArt5Len equ $ - scorpioArt5 
-    
+    scorpioArt1 db "`:--.--.      ", 0
+    scorpioArt1Len equ $ - scorpioArt1
+    scorpioArt2 db " |  |  |      ", 0
+    scorpioArt2Len equ $ - scorpioArt2
+    scorpioArt3 db " |  |  |      ", 0
+    scorpioArt3Len equ $ - scorpioArt3
+    scorpioArt4 db " |  :  |\  ./\,", 0
+    scorpioArt4Len equ $ - scorpioArt4
+    scorpioArt5 db "         `==)|| ", 0
+    scorpioArt5Len equ $ - scorpioArt5
+    scorpioArts     dd scorpioArt1, scorpioArt2, scorpioArt3, scorpioArt4, scorpioArt5
+    scorpioArtsLen  dd scorpioArt1Len, scorpioArt2Len, scorpioArt3Len, scorpioArt4Len, scorpioArt5Len
+    scorpioArtCount db 5
+
     ; sagittarius
-    sagittariusArt1 db "      --.", 0 
+    sagittariusArt1 db "      --.", 0
     sagittariusArt1Len equ $ - sagittariusArt1
     sagittariusArt2 db "      .'|", 0
     sagittariusArt2Len equ $ - sagittariusArt2
     sagittariusArt3 db "    .'   ", 0
     sagittariusArt3Len equ $ - sagittariusArt3
-    sagittariusArt4 db "`..'     ", 0 
+    sagittariusArt4 db "`..'     ", 0
     sagittariusArt4Len equ $ - sagittariusArt4
     sagittariusArt5 db ".'`.     ", 0
     sagittariusArt5Len equ $ - sagittariusArt5
+    sagittariusArts     dd sagittariusArt1, sagittariusArt2, sagittariusArt3, sagittariusArt4, sagittariusArt5
+    sagittariusArtsLen  dd sagittariusArt1Len, sagittariusArt2Len, sagittariusArt3Len, sagittariusArt4Len, sagittariusArt5Len
+    sagittariusArtCount db 5
 
     ; capricorn
     capricornArt1 db "        _  ", 0
-    capricornArt1Len equ $ - capricornArt1 
+    capricornArt1Len equ $ - capricornArt1
     capricornArt2 db "\      /_) ", 0
-    capricornArt2Len equ $ - capricornArt2 
+    capricornArt2Len equ $ - capricornArt2
     capricornArt3 db "|\    /\_  ", 0
-    capricornArt3Len equ $ - capricornArt3 
+    capricornArt3Len equ $ - capricornArt3
     capricornArt4 db " \\  /   \;", 0
-    capricornArt4Len equ $ - capricornArt4 
+    capricornArt4Len equ $ - capricornArt4
     capricornArt5 db "  \\/ -_.' ", 0
-    capricornArt5Len equ $ - capricornArt5 
+    capricornArt5Len equ $ - capricornArt5
+    capricornArts       dd capricornArt1, capricornArt2, capricornArt3, capricornArt4, capricornArt5
+    capricornArtsLen    dd capricornArt1Len, capricornArt2Len, capricornArt3Len, capricornArt4Len, capricornArt5Len
+    capricornArtCount   db 5
 
     ; aquarius
     aquariusArt1 db "   _   _   _   ", 0
     aquariusArt1Len equ $ - aquariusArt1
-    aquariusArt2 db "_./ \./ \./ \._", 0 
+    aquariusArt2 db "_./ \./ \./ \._", 0
     aquariusArt2Len equ $ - aquariusArt2
     aquariusArt3 db "'  .   .   .  '", 0
     aquariusArt3Len equ $ - aquariusArt3
     aquariusArt4 db "_./ \./ \./ \._", 0
     aquariusArt4Len equ $ - aquariusArt4
-    aquariusArt5 db "'             '", 0
+    aquariusArt5 db "'              '", 0
     aquariusArt5Len equ $ - aquariusArt5
+    aquariusArts        dd aquariusArt1, aquariusArt2, aquariusArt3, aquariusArt4, aquariusArt5
+    aquariusArtsLen     dd aquariusArt1Len, aquariusArt2Len, aquariusArt3Len, aquariusArt4Len, aquariusArt5Len
+    aquariusArtCount    db 5
 
     ; pisces
-    piscesArt1 db "`-.    .-'", 0
+    piscesArt1 db "`-.   .-'", 0
     piscesArt1Len equ $ - piscesArt1
     piscesArt2 db "   :  :   ", 0
     piscesArt2Len equ $ - piscesArt2
@@ -376,15 +463,11 @@ section .data
     piscesArt3Len equ $ - piscesArt3
     piscesArt4 db "   :  :   ", 0
     piscesArt4Len equ $ - piscesArt4
-    piscesArt5 db ".-'    `-.", 0
+    piscesArt5 db ".-'   `-.", 0
     piscesArt5Len equ $ - piscesArt5
-
-    zodiacs dd aries, taurus, gemini, cancer, leo, virgo, libra, scorpio, sagittarius, capricorn, aquarius, pisces
-    zodiacsLen db ariesLen, taurusLen, geminiLen, cancerLen, leoLen, virgoLen, libraLen, scorpioLen, sagittariusLen, capricornLen, aquariusLen, piscesLen
-
-    newln db 10
-    newlnLen equ $ - newln
-    
+    piscesArts      dd piscesArt1, piscesArt2, piscesArt3, piscesArt4, piscesArt5
+    piscesArtsLen   dd piscesArt1Len, piscesArt2Len, piscesArt3Len, piscesArt4Len, piscesArt5Len
+    piscesArtCount  db 5
 
 section .bss
     contentBuffer resb 4096
@@ -415,7 +498,6 @@ outerLoop:
 
     cmp byte [menuChoice], '1'
     je handleZodiac
-
     cmp byte [menuChoice], '2'
     je exit
 
@@ -426,20 +508,170 @@ handleZodiac:
     GETINPUT bdayPrompt, bdayPromptLen, bdayBuffer
     call parseBirthday
     call determineZodiac
-    call outputZodiac
-    call saveToFile
-
-    STDOUT newln, newlnLen
+    call outputZodiac      
+    call saveToFile       
     STDOUT savedTxt, savedTxtLen
     STDOUT newln, newlnLen
-
-
     jmp askTryAgain
 
 saveToFile:
+    mov dword [contentLength], 0
+
+    APPEND_STR_LITERAL outputTxt
+
+    movzx eax, byte [zodiacInt]
+    dec eax
+    shl eax, 2
+    mov eax, [zodiacs + eax]
+    call appendString
+
+    APPEND_STR_LITERAL newln
+    APPEND_STR_LITERAL newln
+
     mov eax, bdayTxt
     mov ebx, bdayBuffer
     call appendStringPair
+
+    APPEND_STR_LITERAL newln
+    APPEND_STR_LITERAL newln
+
+    cmp byte [zodiacInt], 1
+    je .appendAriesArt
+    cmp byte [zodiacInt], 2
+    je .appendTaurusArt
+    cmp byte [zodiacInt], 3
+    je .appendGeminiArt
+    cmp byte [zodiacInt], 4
+    je .appendCancerArt
+    cmp byte [zodiacInt], 5
+    je .appendLeoArt
+    cmp byte [zodiacInt], 6
+    je .appendVirgoArt
+    cmp byte [zodiacInt], 7
+    je .appendLibraArt
+    cmp byte [zodiacInt], 8
+    je .appendScorpioArt
+    cmp byte [zodiacInt], 9
+    je .appendSagittariusArt
+    cmp byte [zodiacInt], 10
+    je .appendCapricornArt
+    cmp byte [zodiacInt], 11
+    je .appendAquariusArt
+    cmp byte [zodiacInt], 12
+    je .appendPiscesArt
+    jmp .doneAppendArt
+
+.appendLoopArt:
+    push ecx
+
+    mov ecx, [esi]
+    push esi
+    APPEND_STR_LITERAL ecx
+    pop esi
+    pop ecx
+
+    sub ecx, 1
+    add esi, 4
+    cmp ecx, 0
+
+    jne .appendLoopArt
+    jmp .doneAppendArt
+.appendAriesArt:
+    APPEND_LOOP_ART ariesArtCount, ariesArts
+.appendTaurusArt:
+    APPEND_LOOP_ART taurusArtCount, taurusArts
+.appendGeminiArt:
+    APPEND_LOOP_ART geminiArtCount, geminiArts
+.appendCancerArt:
+    APPEND_LOOP_ART cancerArtCount, cancerArts
+.appendLeoArt:
+    APPEND_LOOP_ART leoArtCount, leoArts
+.appendVirgoArt:
+    APPEND_LOOP_ART virgoArtCount, virgoArts
+.appendLibraArt:
+    APPEND_LOOP_ART libraArtCount, libraArts
+.appendScorpioArt:
+    APPEND_LOOP_ART scorpioArtCount, scorpioArts
+.appendSagittariusArt:
+    APPEND_LOOP_ART sagittariusArtCount, sagittariusArts
+.appendCapricornArt:
+    APPEND_LOOP_ART capricornArtCount, capricornArts
+.appendAquariusArt:
+    APPEND_LOOP_ART aquariusArtCount, aquariusArts
+.appendPiscesArt:
+    APPEND_LOOP_ART piscesArtCount, piscesArts
+.doneAppendArt:
+    APPEND_STR_LITERAL newln
+    APPEND_STR_LITERAL newln
+
+    cmp byte [zodiacInt], 1
+    je .appendAriesInfo
+    cmp byte [zodiacInt], 2
+    je .appendTaurusInfo
+    cmp byte [zodiacInt], 3
+    je .appendGeminiInfo
+    cmp byte [zodiacInt], 4
+    je .appendCancerInfo
+    cmp byte [zodiacInt], 5
+    je .appendLeoInfo
+    cmp byte [zodiacInt], 6
+    je .appendVirgoInfo
+    cmp byte [zodiacInt], 7
+    je .appendLibraInfo
+    cmp byte [zodiacInt], 8
+    je .appendScorpioInfo
+    cmp byte [zodiacInt], 9
+    je .appendSagittariusInfo
+    cmp byte [zodiacInt], 10
+    je .appendCapricornInfo
+    cmp byte [zodiacInt], 11
+    je .appendAquariusInfo
+    cmp byte [zodiacInt], 12
+    je .appendPiscesInfo
+    jmp .doneAppendInfo
+
+.appendLoopInfo:
+    push ecx
+
+    mov ecx, [esi]
+    push esi
+    APPEND_STR_LITERAL ecx
+    pop esi
+    pop ecx
+
+    sub ecx, 1
+    add esi, 4
+    cmp ecx, 0
+
+    jne .appendLoopInfo
+    jmp .doneAppendInfo
+.appendAriesInfo:
+    APPEND_LOOP_INFO ariesInfoCount, ariesInfos
+.appendTaurusInfo:
+    APPEND_LOOP_INFO taurusInfoCount, taurusInfos
+.appendGeminiInfo:
+    APPEND_LOOP_INFO geminiInfoCount, geminiInfos
+.appendCancerInfo:
+    APPEND_LOOP_INFO cancerInfoCount, cancerInfos
+.appendLeoInfo:
+    APPEND_LOOP_INFO leoInfoCount, leoInfos
+.appendVirgoInfo:
+    APPEND_LOOP_INFO virgoInfoCount, virgoInfos
+.appendLibraInfo:
+    APPEND_LOOP_INFO libraInfoCount, libraInfos
+.appendScorpioInfo:
+    APPEND_LOOP_INFO scorpioInfoCount, scorpioInfos
+.appendSagittariusInfo:
+    APPEND_LOOP_INFO sagittariusInfoCount, sagittariusInfos
+.appendCapricornInfo:
+    APPEND_LOOP_INFO capricornInfoCount, capricornInfos
+.appendAquariusInfo:
+    APPEND_LOOP_INFO aquariusInfoCount, aquariusInfos
+.appendPiscesInfo:
+    APPEND_LOOP_INFO piscesInfoCount, piscesInfos
+.doneAppendInfo:
+    APPEND_STR_LITERAL newln
+    FILEWRITE filename, contentBuffer, contentLength
     ret
 
 outputZodiac:
@@ -486,156 +718,49 @@ outputZodiac:
     je .printAquariusArt
     cmp byte [zodiacInt], 12
     je .printPiscesArt
-    jmp .doneArt            ; Jump to the end
+    jmp .doneArt          
 
+.printLoopArt:  
+    push ecx
+
+    mov edx, [esi]
+    mov ecx, [edi]
+    STDOUT ecx, edx
+    STDOUT newln, newlnLen
+    pop ecx
+
+    sub ecx, 1
+    add esi, 4
+    add edi, 4
+    cmp ecx, 0
+    
+    jne .printLoopArt
+    jmp .doneArt
 .printAriesArt:
-    STDOUT ariesArt1, ariesArt1Len
-    STDOUT newln, newlnLen
-    STDOUT ariesArt2, ariesArt2Len
-    STDOUT newln, newlnLen
-    STDOUT ariesArt3, ariesArt3Len
-    STDOUT newln, newlnLen
-    STDOUT ariesArt4, ariesArt4Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART ariesArtCount, ariesArts, ariesArtsLen
 .printTaurusArt:
-    STDOUT taurusArt1, taurusArt1Len
-    STDOUT newln, newlnLen
-    STDOUT taurusArt2, taurusArt2Len
-    STDOUT newln, newlnLen
-    STDOUT taurusArt3, taurusArt3Len
-    STDOUT newln, newlnLen
-    STDOUT taurusArt4, taurusArt4Len
-    STDOUT newln, newlnLen
-    STDOUT taurusArt5, taurusArt5Len
-    STDOUT newln, newlnLen
-    STDOUT taurusArt6, taurusArt6Len
-    STDOUT newln, newlnLen
-    STDOUT taurusArt7, taurusArt7Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART taurusArtCount, taurusArts, taurusArtsLen
 .printGeminiArt:
-    STDOUT geminiArt1, geminiArt1Len
-    STDOUT newln, newlnLen
-    STDOUT geminiArt2, geminiArt2Len
-    STDOUT newln, newlnLen
-    STDOUT geminiArt3, geminiArt3Len
-    STDOUT newln, newlnLen
-    STDOUT geminiArt4, geminiArt4Len
-    STDOUT newln, newlnLen
-    STDOUT geminiArt5, geminiArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART geminiArtCount, geminiArts, geminiArtsLen
 .printCancerArt:
-    STDOUT cancerArt1, cancerArt1Len
-    STDOUT newln, newlnLen
-    STDOUT cancerArt2, cancerArt2Len
-    STDOUT newln, newlnLen
-    STDOUT cancerArt3, cancerArt3Len
-    STDOUT newln, newlnLen
-    STDOUT cancerArt4, cancerArt4Len
-    STDOUT newln, newlnLen
-    STDOUT cancerArt5, cancerArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART cancerArtCount, cancerArts, cancerArtsLen
 .printLeoArt:
-    STDOUT leoArt1, leoArt1Len
-    STDOUT newln, newlnLen
-    STDOUT leoArt2, leoArt2Len
-    STDOUT newln, newlnLen
-    STDOUT leoArt3, leoArt3Len
-    STDOUT newln, newlnLen
-    STDOUT leoArt4, leoArt4Len
-    STDOUT newln, newlnLen
-    STDOUT leoArt5, leoArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART leoArtCount, leoArts, leoArtsLen
 .printVirgoArt:
-    STDOUT virgoArt1, virgoArt1Len
-    STDOUT newln, newlnLen
-    STDOUT virgoArt2, virgoArt2Len
-    STDOUT newln, newlnLen
-    STDOUT virgoArt3, virgoArt3Len
-    STDOUT newln, newlnLen
-    STDOUT virgoArt4, virgoArt4Len
-    STDOUT newln, newlnLen
-    STDOUT virgoArt5, virgoArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART virgoArtCount, virgoArts, virgoArtsLen
 .printLibraArt:
-    STDOUT libraArt1, libraArt1Len
-    STDOUT newln, newlnLen
-    STDOUT libraArt2, libraArt2Len
-    STDOUT newln, newlnLen
-    STDOUT libraArt3, libraArt3Len
-    STDOUT newln, newlnLen
-    STDOUT libraArt4, libraArt4Len
-    STDOUT newln, newlnLen
-    STDOUT libraArt5, libraArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART libraArtCount, libraArts, libraArtsLen
 .printScorpioArt:
-    STDOUT scorpioArt1, scorpioArt1Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioArt2, scorpioArt2Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioArt3, scorpioArt3Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioArt4, scorpioArt4Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioArt5, scorpioArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART scorpioArtCount, scorpioArts, scorpioArtsLen
 .printSagittariusArt:
-    STDOUT sagittariusArt1, sagittariusArt1Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusArt2, sagittariusArt2Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusArt3, sagittariusArt3Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusArt4, sagittariusArt4Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusArt5, sagittariusArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART sagittariusArtCount, sagittariusArts, sagittariusArtsLen
 .printCapricornArt:
-    STDOUT capricornArt1, capricornArt1Len
-    STDOUT newln, newlnLen
-    STDOUT capricornArt2, capricornArt2Len
-    STDOUT newln, newlnLen
-    STDOUT capricornArt3, capricornArt3Len
-    STDOUT newln, newlnLen
-    STDOUT capricornArt4, capricornArt4Len
-    STDOUT newln, newlnLen
-    STDOUT capricornArt5, capricornArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART capricornArtCount, capricornArts, capricornArtsLen
 .printAquariusArt:
-    STDOUT aquariusArt1, aquariusArt1Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusArt2, aquariusArt2Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusArt3, aquariusArt3Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusArt4, aquariusArt4Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusArt5, aquariusArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART aquariusArtCount, aquariusArts, aquariusArtsLen
 .printPiscesArt:
-    STDOUT piscesArt1, piscesArt1Len
-    STDOUT newln, newlnLen
-    STDOUT piscesArt2, piscesArt2Len
-    STDOUT newln, newlnLen
-    STDOUT piscesArt3, piscesArt3Len
-    STDOUT newln, newlnLen
-    STDOUT piscesArt4, piscesArt4Len
-    STDOUT newln, newlnLen
-    STDOUT piscesArt5, piscesArt5Len
-    STDOUT newln, newlnLen
-    jmp .doneArt
+    PRINT_LOOP_ART piscesArtCount, piscesArts, piscesArtsLen
 .doneArt:
-
     STDOUT newln, newlnLen
     STDOUT newln, newlnLen
 
@@ -665,146 +790,48 @@ outputZodiac:
     je .printPiscesInfo
     jmp .doneInfo
 
+.printLoopInfo:  
+    push ecx
 
+    mov edx, [esi]
+    mov ecx, [edi]
+    STDOUT ecx, edx
+    STDOUT newln, newlnLen
+    pop ecx
+
+    sub ecx, 1
+    add esi, 4
+    add edi, 4
+    cmp ecx, 0
+    
+    jne .printLoopInfo
+    jmp .doneInfo
 .printAriesInfo:
-    STDOUT ariesInfo1, ariesInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT ariesInfo2, ariesInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT ariesInfo3, ariesInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT ariesInfo4, ariesInfo4Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO ariesInfoCount, ariesInfos, ariesInfosLen
 .printTaurusInfo:
-    STDOUT taurusInfo1, taurusInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT taurusInfo2, taurusInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT taurusInfo3, taurusInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT taurusInfo4, taurusInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT taurusInfo5, taurusInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO taurusInfoCount, taurusInfos, taurusInfosLen
 .printGeminiInfo:
-    STDOUT geminiInfo1, geminiInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT geminiInfo2, geminiInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT geminiInfo3, geminiInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT geminiInfo4, geminiInfo4Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO geminiInfoCount, geminiInfos, geminiInfosLen
 .printCancerInfo:
-    STDOUT cancerInfo1, cancerInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT cancerInfo2, cancerInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT cancerInfo3, cancerInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT cancerInfo4, cancerInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT cancerInfo5, cancerInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO cancerInfoCount, cancerInfos, cancerInfosLen
 .printLeoInfo:
-    STDOUT leoInfo1, leoInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT leoInfo2, leoInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT leoInfo3, leoInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT leoInfo4, leoInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT leoInfo5, leoInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO leoInfoCount, leoInfos, leoInfosLen
 .printVirgoInfo:
-    STDOUT virgoInfo1, virgoInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT virgoInfo2, virgoInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT virgoInfo3, virgoInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT virgoInfo4, virgoInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT virgoInfo5, virgoInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO virgoInfoCount, virgoInfos, virgoInfosLen
 .printLibraInfo:
-    STDOUT libraInfo1, libraInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT libraInfo2, libraInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT libraInfo3, libraInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT libraInfo4, libraInfo4Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO libraInfoCount, libraInfos, libraInfosLen
 .printScorpioInfo:
-    STDOUT scorpioInfo1, scorpioInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioInfo2, scorpioInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioInfo3, scorpioInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT scorpioInfo4, scorpioInfo4Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO scorpioInfoCount, scorpioInfos, scorpioInfosLen
 .printSagittariusInfo:
-    STDOUT sagittariusInfo1, sagittariusInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusInfo2, sagittariusInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusInfo3, sagittariusInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusInfo4, sagittariusInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT sagittariusInfo5, sagittariusInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO sagittariusInfoCount, sagittariusInfos, sagittariusInfosLen
 .printCapricornInfo:
-    STDOUT capricornInfo1, capricornInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT capricornInfo2, capricornInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT capricornInfo3, capricornInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT capricornInfo4, capricornInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT capricornInfo5, capricornInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO capricornInfoCount, capricornInfos, capricornInfosLen
 .printAquariusInfo:
-    STDOUT aquariusInfo1, aquariusInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusInfo2, aquariusInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusInfo3, aquariusInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusInfo4, aquariusInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT aquariusInfo5, aquariusInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO aquariusInfoCount, aquariusInfos, aquariusInfosLen
 .printPiscesInfo:
-    STDOUT piscesInfo1, piscesInfo1Len
-    STDOUT newln, newlnLen
-    STDOUT piscesInfo2, piscesInfo2Len
-    STDOUT newln, newlnLen
-    STDOUT piscesInfo3, piscesInfo3Len
-    STDOUT newln, newlnLen
-    STDOUT piscesInfo4, piscesInfo4Len
-    STDOUT newln, newlnLen
-    STDOUT piscesInfo5, piscesInfo5Len
-    STDOUT newln, newlnLen
-    jmp .doneInfo
+    PRINT_LOOP_INFO piscesInfoCount, piscesInfos, piscesInfosLen
 .doneInfo:
     ret
-
 determineZodiac:
     movzx eax, byte [month]
     movzx ebx, byte [day]
@@ -926,7 +953,6 @@ askTryAgain:
 
     cmp byte [againChoice], 'y'
     je outerLoop
-
     cmp byte [againChoice], 'n'
     je exit 
 
@@ -935,8 +961,8 @@ askTryAgain:
 
 parseBirthday:
     mov esi, bdayBuffer
-    xor ebx, ebx        ; EBX = number accumulator
-    xor ecx, ecx        ; ECX = state (0=m, 1=d, 2=y)
+    xor ebx, ebx        
+    xor ecx, ecx        
 .parseLoop:
     mov al, [esi]
     cmp al, 0
@@ -947,7 +973,6 @@ parseBirthday:
 
     sub al, '0'
     movzx edx, al 
-
     mov eax, ebx
     push edx
     mov edx, 10
@@ -1004,6 +1029,7 @@ appendString:
 
     mov [contentLength], ecx
     ret
+
 appendStringPair:
     mov edi, contentBuffer
     mov ecx, [contentLength]
@@ -1039,12 +1065,9 @@ appendStringPair:
     mov [contentLength], ecx
     ret
 
-
-
 clearScreen:
     STDOUT cls, clsLen
     ret
-
 exit:
     mov eax, 1
     xor ebx, ebx
